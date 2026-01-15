@@ -1,0 +1,7 @@
+# Ignore heavy vendor libraries in the lib folder
+lib/three.js
+lib/three.max.js
+
+# Ignore system files (good practice)
+.DS_Store
+node_modules/
