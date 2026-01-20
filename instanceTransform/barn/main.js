@@ -32,23 +32,28 @@ const box1dims = {width: 2,
                   height: 3,
                   depth: 4};
 
-var box1;
+const params = {
+    bodyColor: 0xff0000
+}
+
 
 function newBox() {
-    scene.remove(box1);
+    scene.remove(barn);
     const geo = TW.barnGeometry(box1dims.width,
                                 box1dims.height,
                                 box1dims.depth);
-    box1 = TW.createMesh(geo);
-    box1.name = "barn";
-    scene.add(box1);
+    const mat = new THREE.MeshBasicMaterial({color: params.bodyColor})    
+    const barn = new THREE.Mesh( geo, mat)
+    barn.name = "barn";
+    scene.add(barn);
 }
 
 newBox();
 
-box1.position.set(2,1,0);
-box1.rotateY(Math.PI/2);
-box1.scale.z = 2;
+// playing with the barn
+// box1.position.set(2,1,0);
+// box1.rotateY(Math.PI/2);
+// box1.scale.z = 2;
 
 
 // ================================================================

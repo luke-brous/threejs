@@ -20,6 +20,20 @@ globalThis.scene = scene;
 
 // ================================================================
 // build your town here
+function newHouse(x,y,z) {
+    const house1 = TW.createMesh( TW.barnGeometry( 2, 3, 4 ) );
+    house1.position.set(x,y,z)
+    scene.add(house1)
+
+}
+
+newHouse(2,0,0);
+newHouse(4,0,4);
+newHouse(8,0,4);
+
+
+
+
 
 
 
