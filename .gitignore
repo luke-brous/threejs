@@ -2,6 +2,6 @@
 lib/three.js
 lib/three.max.js
 
-# Ignore system files (good practice)
+# Ignore system files
 .DS_Store
 node_modules/
