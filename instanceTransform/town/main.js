@@ -18,9 +18,10 @@ globalThis.TW = TW;
 var scene = new THREE.Scene();
 globalThis.scene = scene;
 
-
 var params = {
-    planeColor: 0xffffff
+    planeColor: 0xffffff,
+    treeColor: 0x006400,
+    trunkColor: 0x964B00
 }
 
 // ================================================================
@@ -38,13 +39,38 @@ function newPlane(width, height) {
     const geo = new THREE.PlaneGeometry( width, height );
     const mat = new THREE.MeshBasicMaterial( {color: params.planeColor, side: THREE.DoubleSide} );
     const plane = new THREE.Mesh( geo, mat );
-    plane.rotateX(Math.PI/2);
+    plane.rotateX(-Math.PI/2);
     plane.position.set(width/2,0,height/2)
     scene.add( plane );
     return plane;
 }
 
+function newTree(radius, height, radSeg) {
+    // upper/leaf part of the tree
+    const geoTree = new THREE.ConeGeometry( radius, height, radSeg );
+    const matTree = new THREE.MeshBasicMaterial( {color: params.treeColor})
+    const tree = new THREE.Mesh( geoTree, matTree )
+    tree.position.set(12,6,25)
 
+
+
+
+    scene.add( tree )
+    return tree;
+}
+
+function newTrunk(radTop, radBot, height, radSeg) {
+
+    // trunk part of the tree
+    const geoTrunk = new THREE.CylinderGeometry(
+	radTop, radBot, height, radSeg );
+    const matTrunk = new THREE.MeshBasicMaterial( {color: params.trunkColor})
+    const trunk = new THREE.Mesh( geoTrunk, matTrunk)
+    trunk.position.set(12,1.5,25)
+
+    scene.add(trunk)
+    return trunk;
+}
 
 
 
@@ -55,7 +81,9 @@ newHouse(20,0,16, Math.PI*1.7);
 
 newPlane(35,35);
 
+newTree(2,9,20)
 
+newTrunk(.5,.5,3,10)
 
 
 
