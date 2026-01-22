@@ -2,11 +2,17 @@
  * Build a Town Exercise
  * 
  * Follow the instructions in town.md to build your own town scene.
+ * Add multiple trees and multiple snowmen.  
+ * I strongly suggest that you use a group for the tree:
+ *     - create a THREE.Group to hold the two parts of the tree
+ *     - define a function to create and return the group
+ *     - place the group in the scene using position.set()
  *---------------------------------------------------------------*/
 
 //import three js and all the addons that are used in this script 
 import * as THREE from 'three';
 import { TW } from 'tw';
+import * as SNOW from './snowperson.js';
 
 console.log(`Loaded Three.js version ${THREE.REVISION}`);
 
@@ -18,46 +24,8 @@ globalThis.TW = TW;
 var scene = new THREE.Scene();
 globalThis.scene = scene;
 
-
-var params = {
-    planeColor: 0xffffff
-}
-
 // ================================================================
 // build your town here
-function newHouse(x,y,z,rotate) {
-    const house = TW.createMesh( TW.barnGeometry( 5, 6, 10 ) );
-    house.position.set(x,y,z)
-    house.rotateY(rotate || 0);
-    scene.add(house)
-    return house;
-
-}
-
-function newPlane(width, height) {
-    const geo = new THREE.PlaneGeometry( width, height );
-    const mat = new THREE.MeshBasicMaterial( {color: params.planeColor, side: THREE.DoubleSide} );
-    const plane = new THREE.Mesh( geo, mat );
-    plane.rotateX(Math.PI/2);
-    plane.position.set(width/2,0,height/2)
-    scene.add( plane );
-    return plane;
-}
-
-
-
-
-
-// create the houses 
-newHouse(10,0,15,Math.PI/2);
-newHouse(14,0,10);
-newHouse(20,0,16, Math.PI*1.7);
-
-newPlane(35,35);
-
-
-
-
 
 
 
