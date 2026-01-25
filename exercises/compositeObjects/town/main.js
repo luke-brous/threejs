@@ -32,6 +32,12 @@ globalThis.scene = scene;
 
 
 
+SNOW.makeSnowPerson(SNOW.snowParameters);
+
+
+
+
+
 
 
 
