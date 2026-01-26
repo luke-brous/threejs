@@ -27,12 +27,83 @@ globalThis.scene = scene;
 // ================================================================
 // build your town here
 
+var params = {
+    planeColor: 0xffffff,
+    treeColor: 0x006400,
+    trunkColor: 0x964B00,
+    radius: 2,
+    treeHeight: 10,
+    radSeg: 8,
+    radTop: 0.5,
+    radBot: 0.5,
+    trunkHeight: 2,
+    trunkRadSeg: 8
+}
+
+function newHouse(x,y,z,rotate) {
+    const house = TW.createMesh( TW.barnGeometry( 3, 4, 6 ) );
+    house.position.set(x,y,z)
+    house.rotateY(rotate || 0);
+    scene.add(house)
+    return house;
+
+}
 
 
+function newPlane(width, height) {
+    const geo = new THREE.PlaneGeometry( width, height );
+    const mat = new THREE.MeshBasicMaterial( {color: params.planeColor, side: THREE.DoubleSide} );
+    const plane = new THREE.Mesh( geo, mat );
+    plane.rotateX(-Math.PI/2);
+    plane.position.set(width/2,0,height/2)
+    scene.add( plane );
+    return plane;
+}
 
 
+function newTree(params, x, z) {
+    const tree = new THREE.Group();
+    
+    const geoTree = new THREE.ConeGeometry( params.radius, params.treeHeight, params.radSeg );
+    const matTree = new THREE.MeshBasicMaterial( {color: params.treeColor})
+    const treeMesh = new THREE.Mesh( geoTree, matTree )
 
-SNOW.makeSnowPerson(SNOW.snowParameters);
+    const geoTrunk = new THREE.CylinderGeometry(
+    params.radTop, params.radBot, params.trunkHeight, params.trunkRadSeg );
+    const matTrunk = new THREE.MeshBasicMaterial( {color: params.trunkColor})
+    const trunkMesh = new THREE.Mesh( geoTrunk, matTrunk)
+
+    tree.add( treeMesh );
+    tree.add( trunkMesh );
+
+    trunkMesh.position.set(x, params.trunkHeight/2, z);
+    treeMesh.position.set(x, params.trunkHeight + params.treeHeight/2, z);
+
+
+    scene.add( tree )
+    return tree;
+}
+
+
+// create the scene objects
+newHouse(10,0,10,Math.PI/2);
+newHouse(14,0,10);
+newHouse(20,0,20,Math.PI/4);
+newHouse(5,0,25,Math.PI/3);
+
+newPlane(25, 25);
+
+newTree(params, 4, 4);
+newTree(params, 10, 15);
+newTree(params, 20, 8);
+newTree(params, 25, 20);
+newTree(params, 15, 25);
+
+
+SNOW.newSnowPerson(SNOW.snowParameters);
+SNOW.newSnowPerson(SNOW.snowParameters);
+SNOW.newSnowPerson(SNOW.snowParameters);
+
 
 
 

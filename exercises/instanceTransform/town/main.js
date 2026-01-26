@@ -26,6 +26,7 @@ var params = {
 
 // ================================================================
 // build your town here
+
 function newHouse(x,y,z,rotate) {
     const house = TW.createMesh( TW.barnGeometry( 5, 6, 10 ) );
     house.position.set(x,y,z)
@@ -51,9 +52,6 @@ function newTree(radius, height, radSeg) {
     const matTree = new THREE.MeshBasicMaterial( {color: params.treeColor})
     const tree = new THREE.Mesh( geoTree, matTree )
     tree.position.set(12,6,25)
-
-
-
 
     scene.add( tree )
     return tree;
