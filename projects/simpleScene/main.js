@@ -19,13 +19,11 @@ globalThis.scene = scene;
 // Scene
 
 
-const planeGeo = new THREE.PlaneGeometry(20,20);
-const planeMesh = new THREE.Mesh( planeGeo, new THREE.MeshBasicMaterial( {color: 'green', side: THREE.DoubleSide} ) );
-planeMesh.rotation.x = Math.PI / 2;
-planeMesh.position.y = -0.01;
-scene.add( planeMesh );
+piece.makeBoard();
 
+piece.makePawn(0,0,0,1);
 
+piece.makePawn(2,0,2,0);
 
 
 
