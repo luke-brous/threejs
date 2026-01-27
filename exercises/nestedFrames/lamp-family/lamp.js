@@ -94,24 +94,27 @@ export function makeFullLamp(paramsDic) {
 
     const full = new THREE.Group();
 
-    const shade = makeShade(paramsDic);
-    shade.position.setY(len);
-    shade.rotation.z = TW.degrees2radians(p.shadeAngle);
-    full.add(shade);
-
     const upperArm = makeUpperArm(paramsDic);
+    upperArm.position.setY(len);
     upperArm.rotation.z = TW.degrees2radians(p.elbowAngle);
     full.add(upperArm);
 
+
     const armGeom1 = new THREE.CylinderGeometry(p.armRadius, p.armRadius, len);
     const armMesh2 = new THREE.Mesh(armGeom1, p.armMaterial);
-    armMesh2.position.setY(-len);
-    armMesh2.rotation.z = TW.degrees2radians(p.baseAngle); 
+    armMesh2.position.setY(len/2);
     full.add(armMesh2);
+
+    const baseGeom = new THREE.CylinderGeometry(p.baseRadius, p.baseRadius, p.baseHeight);
+    const baseMesh = new THREE.Mesh(baseGeom, p.baseMaterial);
+    baseMesh.position.setY(p.baseHeight/4);
+    baseMesh.rotation.z = TW.degrees2radians(-45);
+    baseMesh.name = "base";
+    full.add(baseMesh);
+
+
+
 
     full.name = 'base';
     return full;
-    
-
-
 }

@@ -38,17 +38,10 @@ const params = {
     baseAngle: 45,
 };
 
-const mom = lamp.makeUpperArm(params);
+const mom = lamp.makeFullLamp(params);
 // caller sets the rotation of the object
-mom.getObjectByName("elbow").rotation.z = TW.degrees2radians(params.elbowAngle);
-scene.add(mom);
-
-
-const mom1 = lamp.makeFullLamp(params);
-// caller sets the rotation of the object
-mom1.getObjectByName("full").rotation.z = TW.degrees2radians(params.baseAngle);
-
-scene.add(mom1);
+mom.getObjectByName("base").rotation.z = TW.degrees2radians(params.baseAngle);
+scene.add(mom); 
 
 
 
