@@ -40,6 +40,26 @@ var params = {
     trunkRadSeg: 8
 }
 
+const snowParams = {
+    wireFrame: true,
+    snowColor: 0xffffff,        // white
+    noseColor: 0xff8c00,        // orange
+    botSize: 3,                 // bottom ball
+    midSize: 2,                 // middle ball
+    topSize: 1,                 // top ball
+    noseSize: 0.5,              // length of nose
+};
+
+function remakeSnowmen(x, z, rotate) {
+    const snowman = SNOW.makeSnowPerson(snowParams);
+    snowman.position.set(x,0,z);
+    scene.add(snowman);
+    snowman.rotateY(rotate || 0)
+    return snowman;
+}
+
+
+
 function newHouse(x,y,z,rotate) {
     const house = TW.createMesh( TW.barnGeometry( 3, 4, 6 ) );
     house.position.set(x,y,z)
@@ -91,18 +111,16 @@ newHouse(14,0,10);
 newHouse(20,0,20,Math.PI/4);
 newHouse(5,0,25,Math.PI/3);
 
-newPlane(25, 25);
+newPlane(30, 30);
 
 newTree(params, 4, 4);
 newTree(params, 10, 15);
 newTree(params, 20, 8);
-newTree(params, 25, 20);
-newTree(params, 15, 25);
+newTree(params, 28, 20);
+newTree(params, 15, 28);
 
-
-SNOW.newSnowPerson(SNOW.snowParameters);
-SNOW.newSnowPerson(SNOW.snowParameters);
-SNOW.newSnowPerson(SNOW.snowParameters);
+remakeSnowmen(27,27, -Math.PI/4);
+remakeSnowmen(27,2, Math.PI )
 
 
 
