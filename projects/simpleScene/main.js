@@ -18,18 +18,20 @@ globalThis.scene = scene;
 // ================================================================
 // Scene
 
+function makeInitialPosition() {
+    piece.makeBoard();
 
-piece.makeBoard();
+    for (let i = 0; i < 8; i++ ) {
+        piece.makePawn(-10.5 + i * 3, 0.25, -7.5, 0);
+        piece.makePawn(-10.5 + i * 3, 0.25, 7.5, 1);
+    }
 
-piece.makePawn(0,0,0,1);
-
-piece.makePawn(2,0,2,0);
-
-
-
+}
 
 
 
+
+makeInitialPosition();
 
 
 
