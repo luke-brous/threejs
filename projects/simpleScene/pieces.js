@@ -42,6 +42,25 @@ const params = {
     bishopBaseTopRadius: 0.7,
     bishopBodyBottomRadius: 0.5,
     bishopBodyTopRadius: 0.3,
+    // queen parameters
+    queenBodyTopRadius: 0.5,
+    queenBodyBottomRadius: 0.6,
+    queenBodyHeight: 2.5,
+    queenHeadTopRadius: 0.7,
+    queenHeadBottomRadius: 0.4,
+    queenHeadHeight: 0.5,
+    queenBaseTopRadius: 1.0,
+    queenBaseBottomRadius: 1.1,
+    queenBaseHeight: 0.5,
+    // king parameters
+    kingBaseTopRadius: 1.0,
+    kingBaseBottomRadius: 1.1,
+    kingBaseHeight: 0.5,
+    kingHeadBottomRadius: 0.4,
+    kingHeadTopRadius: 0.7,
+    kingHeadHeight: 0.5,
+
+
 
 
 }
@@ -285,8 +304,102 @@ export function makeRook(x, y, z, color) {
 }
 
 export function makeQueen(x, y, z, color) {
+    
+    const queen = new THREE.Group();
+    const height = params.pawnBaseHeight;
+
+    let mat;
+
+    if (color == 1) {
+        mat = params.whiteMaterial;
+    } else {
+        mat = params.blackMaterial;
+        
+    }
+
+    // base
+    const queenBaseGeo = new THREE.CylinderGeometry(params.queenBaseTopRadius, params.queenBaseBottomRadius, params.queenBaseHeight);
+    const baseMesh = new THREE.Mesh(queenBaseGeo, mat);
+    baseMesh.position.y = height / 2;
+
+    queen.add(baseMesh);
+
+    // body
+    const queenBodyGeo = new THREE.CylinderGeometry(params.queenBodyTopRadius, params.queenBodyBottomRadius, params.queenBodyHeight);
+    const bodyMesh = new THREE.Mesh(queenBodyGeo, mat);
+    bodyMesh.position.y = height + (params.queenBodyHeight / 2);
+    queen.add(bodyMesh);
+
+    // head
+    const queenHeadGeo = new THREE.CylinderGeometry(params.queenHeadTopRadius, params.queenHeadBottomRadius, params.queenHeadHeight);
+    const headMesh = new THREE.Mesh(queenHeadGeo, mat);
+    headMesh.position.y = height + params.queenBodyHeight + (height / 2);
+    queen.add(headMesh);
+
+    // top
+    const topGeo = new THREE.SphereGeometry(0.3, 32, 32);
+    const topMesh = new THREE.Mesh(topGeo, mat);
+    topMesh.position.y = height + params.queenBodyHeight + params.queenHeadHeight + 0.2;
+    topMesh.scale.set(1, 1.4, 1);
+    queen.add(topMesh);
+
+    scene.add(queen);
+    queen.position.set(x, y, z);
+    return queen;
+
 }
 
 export function makeKing(x, y, z, color) {
+    
+    const king = new THREE.Group();
+    const height = params.pawnBaseHeight;
+
+    let mat;
+
+    if (color == 1) {
+        mat = params.whiteMaterial;
+    } else {
+        mat = params.blackMaterial;
+        
+    }
+
+    // base
+    const kingBaseGeo = new THREE.CylinderGeometry(params.kingBaseTopRadius, params.kingBaseBottomRadius, params.kingBaseHeight);
+    const baseMesh = new THREE.Mesh(kingBaseGeo, mat);
+    baseMesh.position.y = height / 2;
+
+    king.add(baseMesh);
+    // body
+    const kingBodyGeo = new THREE.CylinderGeometry(params.queenBodyTopRadius, params.queenBodyBottomRadius, params.queenBodyHeight);
+    const bodyMesh = new THREE.Mesh(kingBodyGeo, mat);
+    bodyMesh.position.y = height + (params.queenBodyHeight / 2);
+    king.add(bodyMesh);
+
+    // head
+    const kingHeadGeo = new THREE.CylinderGeometry(params.kingHeadTopRadius, params.kingHeadBottomRadius, params.kingHeadHeight);
+    const headMesh = new THREE.Mesh(kingHeadGeo, mat);
+    headMesh.position.y = height + params.queenBodyHeight + (height / 2);
+    king.add(headMesh);
+
+    // top cross facing up
+    const topGeo1 = new THREE.BoxGeometry(0.2, 0.6, 0.2);
+    const topMesh1 = new THREE.Mesh(topGeo1, mat);
+    topMesh1.position.y = height + params.queenBodyHeight + params.kingHeadHeight + 0.2;
+    king.add(topMesh1);
+
+    // top cross sideways
+    const topGeo2 = new THREE.BoxGeometry(0.5, 0.2, 0.2);
+
+    const topMesh2 = new THREE.Mesh(topGeo2, mat);
+
+    topMesh2.position.y = height + params.queenBodyHeight + params.kingHeadHeight + 0.2;
+
+    king.add(topMesh2);
+
+
+    scene.add(king);
+    king.position.set(x, y, z);
+    return king;
+    
 
 }

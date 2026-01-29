@@ -18,25 +18,46 @@ globalThis.scene = scene;
 // ================================================================
 // Scene
 
+let pawn1; // pawn that gui can manipulate
+
+// create the initial position of the chess pieces
 function makeInitialPosition() {
     piece.makeBoard();
 
     for (let i = 0; i < 8; i++ ) {
-        piece.makePawn(-10.5 + i * 3, 0.25, -7.5, 0);
-        piece.makePawn(-10.5 + i * 3, 0.25, 7.5, 1);
+        piece.makePawn(-10.5 + i * 3, 0.025, -7.5, 0);
+        piece.makePawn(-10.5 + i * 3, 0.025, 7.5, 1);
     }
+
+
+    piece.makeBishop(-4.5, 0.025, -10.5, 0);
+    piece.makeBishop(4.5, 0.025, -10.5, 0);
+    piece.makeBishop(-4.5, 0.025, 10.5, 1);
+    piece.makeBishop(4.5, 0.025, 10.5, 1);
+
+    piece.makeRook(-10.5, 0.025, -10.5, 0);
+    piece.makeRook(10.5, 0.025, -10.5, 0);
+    piece.makeRook(-10.5, 0.025, 10.5, 1);
+    piece.makeRook(10.5, 0.025, 10.5, 1);
+
+    piece.makeKnight(-7.5, 0.025, -10.5, 0);
+    piece.makeKnight(7.5, 0.025, -10.5, 0);
+    piece.makeKnight(-7.5, 0.025, 10.5, 1);
+    piece.makeKnight(7.5, 0.025, 10.5, 1);
+
+    piece.makeQueen(-1.5, 0.025, -10.5, 0);
+    piece.makeQueen(-1.5, 0.025, 10.5, 1);
+
+    piece.makeKing(1.5, 0.025, -10.5, 0);
+    piece.makeKing(1.5, 0.025, 10.5, 1);
+
+    // pawn that gui can manipulate
+    pawn1 = piece.makePawn(-1.5, 0.025, -1.5, 0);
 
 }
 
 
-
-
 makeInitialPosition();
-
-
-
-
-
 
 
 // ===============================================================
@@ -49,6 +70,30 @@ var renderer = new THREE.WebGLRenderer();
 TW.mainInit(renderer,scene);
 
 const gui = new GUI();
+
+const guiControls = {
+    pawn1X: -1.5,
+    pawn1Z: -1.5,
+    // saw this was common practice in other gui examples
+    reset: function() {
+        this.pawn1X = -1.5;
+        this.pawn1Z = -1.5;
+        pawn1.position.set(this.pawn1X, 0.025, this.pawn1Z);
+    }
+}
+
+const guiFolder = gui.addFolder('Pawn Position');
+
+guiFolder.add(guiControls, 'pawn1X', -10.5, 10.5).name('Move X').onChange((value) => {
+    pawn1.position.x = value;
+});
+
+guiFolder.add(guiControls, 'pawn1Z', -10.5, 10.5).name('Move Z').onChange((value) => {
+    pawn1.position.z = value;
+});
+
+guiFolder.add(guiControls, 'reset').name('Reset Position');
+
 
 
 // Set up a camera for the scene
