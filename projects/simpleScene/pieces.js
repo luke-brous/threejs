@@ -65,7 +65,7 @@ const params = {
 
 }
 
-
+// create the chess board
 export function makeBoard() {
     const size = 3
     const offset = (8 * size) / 2 - size / 2; // Math to center the board
@@ -102,14 +102,13 @@ export function makeBoard() {
 
 }
 
+
+// predifine geometries for pawns to optimize runtime performance
 const pawnBaseGeo = new THREE.CylinderGeometry(params.pawnBaseTopRadius, params.pawnBaseBottomRadius, params.pawnBaseHeight);
 const pawnBodyGeo = new THREE.CylinderGeometry(params.pawnBodyTopRadius / 2, params.pawnBodyBottomRadius, params.pawnBodyHeight);
 const pawnHeadGeo = new THREE.SphereGeometry(params.pawnBodyTopRadius, 32, 32);
 
-
-
-
-
+// create a pawn at position (x,y,z) with color 0=black, 1=white
 export function makePawn(x,y,z, color) {
     
     const pawn = new THREE.Group();
@@ -148,6 +147,7 @@ export function makePawn(x,y,z, color) {
 
 }
 
+// create a knight at position (x,y,z) with color 0=black, 1=white
 export function makeKnight(x, y, z, color) {
 
     const knight = new THREE.Group();
@@ -175,31 +175,31 @@ export function makeKnight(x, y, z, color) {
     const bodyGeo = new THREE.BoxGeometry(params.knightBodyWidth, params.knightBodyHeight, params.knightBodyDepth);
     const bodyMesh = new THREE.Mesh(bodyGeo, mat);
     bodyMesh.position.y = height + (params.pawnBodyHeight / 2);
-    bodyMesh.rotation.x = TW.degrees2radians(-10);
-    bodyMesh.position.z = 0.2;
+    color == 1 ? bodyMesh.rotation.x = TW.degrees2radians(-10) : bodyMesh.rotation.x = TW.degrees2radians(10);
+    color == 1 ? bodyMesh.position.z = 0.2 : bodyMesh.position.z = -0.2;
     knight.add(bodyMesh);
 
     // head
     const headGeo = new THREE.BoxGeometry(params.knightHeadWidth, params.knightHeadHeight, params.knightHeadDepth);
     const headMesh = new THREE.Mesh(headGeo, mat);
     headMesh.position.y = height + params.pawnBodyHeight + (params.pawnBodyTopRadius / 2);
-    headMesh.rotation.x = TW.degrees2radians(-10);
+    color == 1 ? headMesh.rotation.x = TW.degrees2radians(-10) : headMesh.rotation.x = TW.degrees2radians(10);
 
     knight.add(headMesh);
 
     const earGeo = new THREE.ConeGeometry(0.2, 0.5, 32);
     const earMesh1 = new THREE.Mesh(earGeo, mat);
     earMesh1.position.y = height + params.pawnBodyHeight + params.knightHeadHeight - 0.1;
-    earMesh1.position.z = 0.3;
+    color == 1 ? earMesh1.position.z = 0.3 : earMesh1.position.z = -0.3;
     earMesh1.position.x = -0.2;
-    earMesh1.rotation.x = TW.degrees2radians(-30);
+    color == 1 ? earMesh1.rotation.x = TW.degrees2radians(-30) : earMesh1.rotation.x = TW.degrees2radians(30);
     knight.add(earMesh1);
 
     const earMesh2 = new THREE.Mesh(earGeo, mat);
     earMesh2.position.y = height + params.pawnBodyHeight + params.knightHeadHeight - 0.1;
-    earMesh2.position.z = 0.3;
+    color == 1 ? earMesh2.position.z = 0.3 : earMesh2.position.z = -0.3;
     earMesh2.position.x = 0.2;
-    earMesh2.rotation.x = TW.degrees2radians(-30);
+    color == 1 ? earMesh2.rotation.x = TW.degrees2radians(-30) : earMesh2.rotation.x = TW.degrees2radians(30);
     knight.add(earMesh2);
 
 
@@ -210,6 +210,7 @@ export function makeKnight(x, y, z, color) {
 
 }
 
+// create a bishop at position (x,y,z) with color 0=black, 1=white
 export function makeBishop(x, y, z, color) {
 
     const bishop = new THREE.Group();
@@ -262,6 +263,8 @@ export function makeBishop(x, y, z, color) {
 
 }
 
+
+// create a rook at position (x,y,z) with color 0=black, 1=white
 export function makeRook(x, y, z, color) {
 
     const rook = new THREE.Group();
@@ -303,6 +306,7 @@ export function makeRook(x, y, z, color) {
 
 }
 
+// create a queen at position (x,y,z) with color 0=black, 1=white
 export function makeQueen(x, y, z, color) {
     
     const queen = new THREE.Group();
@@ -349,6 +353,7 @@ export function makeQueen(x, y, z, color) {
 
 }
 
+// create a king at position (x,y,z) with color 0=black, 1=white
 export function makeKing(x, y, z, color) {
     
     const king = new THREE.Group();

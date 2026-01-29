@@ -71,6 +71,7 @@ TW.mainInit(renderer,scene);
 
 const gui = new GUI();
 
+// GUI controls for moving pawn1
 const guiControls = {
     pawn1X: -1.5,
     pawn1Z: -1.5,
@@ -82,6 +83,7 @@ const guiControls = {
     }
 }
 
+// create a folder in the GUI and add the controls
 const guiFolder = gui.addFolder('Pawn Position');
 
 guiFolder.add(guiControls, 'pawn1X', -10.5, 10.5).name('Move X').onChange((value) => {
