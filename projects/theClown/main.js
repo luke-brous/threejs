@@ -19,12 +19,13 @@ globalThis.scene = scene;
 
 
 
-var barngeometry = new THREE.BoxGeometry(12, 12, 12);
-var barnmaterial = new THREE.MeshStandardMaterial( {color: 0xff0000} );
-var barn = new THREE.Mesh( barngeometry, barnmaterial );
-barn.position.set(0,6,0);
-scene.add( barn );
-
+clown.originPoint();
+// right leg
+clown.makeLeg(1);
+// left leg 
+clown.makeLeg(-1);
+// body
+clown.makeBody(0,0,0);
 
 
 
