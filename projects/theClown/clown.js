@@ -22,6 +22,12 @@ const params = {
     // body
     bodyMat: new THREE.MeshBasicMaterial({ color: colors.neonBlue }),
     bodyRadius: 2.3,
+    // arms
+    armLength: 3,
+    armRadius: .3,
+    shoulderRadius: .7,
+    shoulderTheta: 2.8,
+    handRadius: 1,
 };
 
 
@@ -54,6 +60,32 @@ export function makeLeg(side) {
 export function makeArm(x, y, z) {
     const arm = new THREE.Group();
 
+    // shoulder joint
+    const shoulderGeo = new THREE.SphereGeometry(params.shoulderRadius,16,16,0,Math.PI*2,0,params.shoulderTheta);
+    const shoulderMesh = new THREE.Mesh(shoulderGeo, new THREE.MeshBasicMaterial({ color: colors.brightPink }));
+    shoulderMesh.position.x = params.bodyRadius;
+    shoulderMesh.position.y = params.legLength + params.bodyRadius * 2 - (params.shoulderRadius / 2);
+    shoulderMesh.rotateZ(Math.PI / 8);
+    arm.add(shoulderMesh);
+
+    // arm
+    const armGeo = new THREE.CylinderGeometry(params.armRadius, params.armRadius, params.armLength);
+    const armMesh = new THREE.Mesh(armGeo, new THREE.MeshBasicMaterial({ color: colors.neonBlue }));
+    armMesh.position.x = shoulderMesh.position.x + params.shoulderRadius;
+    armMesh.position.y = shoulderMesh.position.y - params.shoulderRadius * 2;
+    armMesh.rotateZ(Math.PI / 8);
+    arm.add(armMesh);
+
+    // hand
+    const handGeo = new THREE.SphereGeometry(params.handRadius,16,16,0,Math.PI*2,0,2.8);
+    const handMesh = new THREE.Mesh(handGeo, new THREE.MeshBasicMaterial({ color: colors.neonGreen }));
+    handMesh.position.x = armMesh.position.x + params.armLength / 2 * Math.cos(Math.PI / 4);
+    handMesh.position.y = armMesh.position.y + params.armLength / 2 * Math.sin(Math.PI / 4);
+    handMesh.rotateZ(Math.PI / 8);
+    arm.add(handMesh);
+
+
+    scene.add(arm);
     return arm;
 }
 export function makeBody(x, y, z) {

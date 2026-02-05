@@ -5,3 +5,15 @@ lib/three.max.js
 # Ignore system files
 .DS_Store
 node_modules/
+
+# Ignore log files
+*.log
+
+# Ignore build output
+/dist/build/
+/build/ 
+
+# ignore zip files
+*.zip
+*.tar.gz
+*.rar

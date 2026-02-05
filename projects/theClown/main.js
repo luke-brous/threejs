@@ -28,7 +28,7 @@ clown.makeLeg(-1);
 clown.makeBody(0,0,0);
 
 
-
+clown.makeArm(0,0,0);
 
 
 

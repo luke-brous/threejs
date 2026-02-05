@@ -1,0 +1,62 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: fig2dev Version 3.2 Patchlevel 5 -->
+<!-- CreationDate: Sun Oct  2 11:19:12 2016 -->
+<!-- Magnification: 1.000 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1.3in" height="0.8in" viewBox="1174 592 1560 919">
+<g style="stroke-width:.025in; stroke:black; fill:none">
+<!-- Line: box -->
+<rect x="1197" y="604" width="310" height="895" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line: box -->
+<rect x="1796" y="604" width="310" height="895" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line: box -->
+<rect x="2390" y="604" width="310" height="895" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="1650" y="1125" stroke="#000000" fill="#000000"  font-family="Helvetica" font-style="normal" font-weight="bold" font-size="192" text-anchor="middle">=</text>
+<!-- Text -->
+<text xml:space="preserve" x="2250" y="1125" stroke="#000000" fill="#000000"  font-family="Helvetica" font-style="normal" font-weight="bold" font-size="192" text-anchor="middle">x</text>
+<!-- Text -->
+<text xml:space="preserve" x="1350" y="825" stroke="#ff0000" fill="#ff0000"  font-family="Helvetica" font-style="normal" font-weight="normal" font-size="192" text-anchor="middle">nx</text>
+<!-- Text -->
+<text xml:space="preserve" x="1950" y="825" stroke="#ff0000" fill="#ff0000"  font-family="Helvetica" font-style="normal" font-weight="normal" font-size="192" text-anchor="middle">vx</text>
+<!-- Text -->
+<text xml:space="preserve" x="2550" y="825" stroke="#ff0000" fill="#ff0000"  font-family="Helvetica" font-style="normal" font-weight="normal" font-size="192" text-anchor="middle">wx</text>
+<!-- Text -->
+<text xml:space="preserve" x="1350" y="1125" stroke="#00ff00" fill="#00ff00"  font-family="Helvetica" font-style="normal" font-weight="normal" font-size="192" text-anchor="middle">ny</text>
+<!-- Text -->
+<text xml:space="preserve" x="1950" y="1125" stroke="#00ff00" fill="#00ff00"  font-family="Helvetica" font-style="normal" font-weight="normal" font-size="192" text-anchor="middle">vy</text>
+<!-- Text -->
+<text xml:space="preserve" x="2550" y="1125" stroke="#00ff00" fill="#00ff00"  font-family="Helvetica" font-style="normal" font-weight="normal" font-size="192" text-anchor="middle">wy</text>
+<!-- Text -->
+<text xml:space="preserve" x="1350" y="1425" stroke="#0000ff" fill="#0000ff"  font-family="Helvetica" font-style="normal" font-weight="normal" font-size="192" text-anchor="middle">nz</text>
+<!-- Text -->
+<text xml:space="preserve" x="1950" y="1425" stroke="#0000ff" fill="#0000ff"  font-family="Helvetica" font-style="normal" font-weight="normal" font-size="192" text-anchor="middle">vz</text>
+<!-- Text -->
+<text xml:space="preserve" x="2550" y="1425" stroke="#0000ff" fill="#0000ff"  font-family="Helvetica" font-style="normal" font-weight="normal" font-size="192" text-anchor="middle">wz</text>
+<!-- Circle -->
+<circle cx="1350" cy="1050" r="168"
+ style="stroke:#00ff00;stroke-width:7;"/>
+<!-- Line -->
+<polyline points="2550,750
+1950,1350
+" style="stroke:#00ff00;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line -->
+<polyline points="1950,750
+2550,1350
+" style="stroke:#00ff00;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+</g>
+</svg>
