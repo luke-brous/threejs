@@ -4,9 +4,10 @@
  * We want to set up material and lighting to create the scene in 
  * golden-treasure.png.
  * 
- * 1. Add a directional light and a point light
+ * 1. Add a ambient light, and a point light
  * 2. Change the material to Phong
  * 3. Adjust until it seems about right
+ * // add shininess and specular parameter to ball
  *---------------------------------------------------------------*/
 
 //import three js and all the addons that are used in this script 
@@ -24,10 +25,13 @@ globalThis.TW = TW;
 var scene = new THREE.Scene();
 globalThis.scene = scene;
 
+const pointLightDistance = 0; // the default
+const pointLightDecay = 0;    // default is 2, physical model
+
 // ================================================================
 // Build your scene here
 
-const golden = new THREE.MeshBasicMaterial( {color: "goldenrod"} );
+const golden = new THREE.MeshPhongMaterial( {color: "goldenrod"} );
 
 // addTreasure() function adds gold cylinder, sphere, brick, and ring to the scene
 
@@ -81,3 +85,59 @@ TW.cameraSetup(renderer,
                {minx: -50, maxx: 50,
                 miny: 0, maxy: 50,
                 minz: -50, maxz: 50});
+
+// ==== lighting ===
+// Use nested dictionaries for a bit of brevity
+
+const lightParams = {
+    ambient: {
+        on: true,
+        color: 0xffffff,
+        intensity: 1},
+    point: {
+        on: true,
+        color: 0xffffff,
+        intensity: 5,
+        x: 50,
+        y: 20,
+        z: 50,
+    },
+    directional: {
+        on: true,
+        color: 0xffffff,
+        intensity: 3,
+        x: 20,
+        y: 30,
+        z: 0,
+    },
+};
+
+function makeLights() {
+
+    const p = lightParams;
+
+    if (p.ambient.on) {   
+        let light0 = new THREE.AmbientLight( p.ambient.color, p.ambient.intensity );
+        scene.add(light0);
+    }
+    if (p.directional.on) {
+        let light1 = new THREE.DirectionalLight( p.directional.color,
+                                           p.directional.intensity
+                                     );
+        light1.position.set( p.directional.x, p.directional.y, p.directional.z );
+        scene.add(light1);
+    }
+
+    // if (p.point.on) {
+    //     let light2 = new THREE.PointLight( p.point.color,
+    //                                    p.point.intensity,
+    //                                    pointLightDistance,
+    //                                    pointLightDecay
+    //                                  );
+    //     light2.position.set( p.point.x, p.point.y, p.point.z );
+    //     scene.add(light2);
+    // }
+    
+}
+
+makeLights();
