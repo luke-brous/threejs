@@ -1,15 +1,16 @@
+/* Luke Broussard
+2/9/2026
+A clown made of spheres and cylinders, with a hat and a smile.
 
+*/
 import * as THREE from 'three';
-import { TW } from 'tw';
-
 
 const colors = {
     neonGreen: 0x39ff14,
     brightPink: 0xff13f0,
     yellow: 0xffff00,
     neonBlue: 0x04D9FF, 
-    lightTeal: 0xd2fdfe
-
+    lightTeal: 0xd2fdfe,
 }
 
 const params = {
@@ -33,10 +34,14 @@ const params = {
     headRadius: 2,
     headMat: new THREE.MeshBasicMaterial({ color: colors.lightTeal }),
     smileRadius: 1.2,
-    eyeRadius: .2
+    eyeRadius: .2,
+    noseRadius: .2,
+    earRadius: .7,
+    brimRadius: 2.5,
+    hatRadius: 1.5,
+    hatHeight: 3,
+
 };
-
-
 
 export function originPoint() {
     const geo = new THREE.SphereGeometry(.4);
@@ -45,6 +50,7 @@ export function originPoint() {
     scene.add(sphere);
     return sphere;
 }
+
 export function makeLeg(side) {
     const leg = new THREE.Group();
     const legGeo = new THREE.CylinderGeometry(params.legRadius, params.legRadius, params.legLength);
@@ -60,9 +66,8 @@ export function makeLeg(side) {
     leg.add(feetMesh);
 
     return leg;
-
-
 }
+
 export function makeArm(side) {
     const arm = new THREE.Group();
 
@@ -91,7 +96,8 @@ export function makeArm(side) {
     scene.add(arm);
     return arm;
 }
-export function makeBody(x, y, z) {
+
+export function makeBody() {
     const body = new THREE.Group();
     
     const bodyGeo = new THREE.SphereGeometry(params.bodyRadius,16,16);
@@ -105,7 +111,7 @@ export function makeBody(x, y, z) {
     return body;
 }
 
-export function makeHead(x, y, z) {
+export function makeHead() {
     const head = new THREE.Group();
 
     head.position.set(0, params.legLength + (params.bodyRadius * 3), 0);
@@ -114,16 +120,14 @@ export function makeHead(x, y, z) {
     const headMesh = new THREE.Mesh(headGeo, params.headMat);
     head.add(headMesh);
 
-    // smile
+    // smile 
     const smileGeo = new THREE.TorusGeometry(params.smileRadius, 0.1, 50, 100, Math.PI/3);
     const smileMat = new THREE.MeshBasicMaterial({ color: colors.brightPink });
     const smileMesh = new THREE.Mesh(smileGeo, smileMat);
-    smileMesh.position.y = -0.5;
     smileMesh.position.z = params.headRadius - 0.2;
     smileMesh.rotation.x = Math.PI;
     smileMesh.rotation.z = Math.PI / 4;
     head.add(smileMesh);
-
 
     // eyes
     const eyeGeo = new THREE.SphereGeometry(params.eyeRadius,16,16);
@@ -136,10 +140,53 @@ export function makeHead(x, y, z) {
     rightEye.position.set(0.6, 0.5, params.headRadius - 0.1);
     head.add(rightEye);
 
+    // nose 
+    const noseGeo = new THREE.SphereGeometry(params.noseRadius,16,16);
+    const noseMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const noseMesh = new THREE.Mesh(noseGeo, noseMat);
+    noseMesh.position.z = params.headRadius - 0.1;
+    head.add(noseMesh);
+
+    // ears
+    const earGeo = new THREE.SphereGeometry(params.earRadius,16,16);    
+    const earMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const leftEar = new THREE.Mesh(earGeo, earMat);
+    leftEar.position.x = -params.headRadius;
+    leftEar.position.y = 0.5;
+    head.add(leftEar);
+
+    const rightEar = new THREE.Mesh(earGeo, earMat);
+    rightEar.position.x = params.headRadius;
+    rightEar.position.y = 0.5;
+    head.add(rightEar);
+
+    const hatGroup = new THREE.Group();
+    
+    hatGroup.position.y = params.headRadius * 0.9; // slightly embedded
+    
+    // Tilt the whole hat here
+    hatGroup.rotation.z = -Math.PI / 10; 
+    hatGroup.rotation.x = -Math.PI / 12; // Optional: tilt back slightly too
+
+    // The Brim
+    const brimGeo = new THREE.CylinderGeometry(params.brimRadius, params.brimRadius, 0.2, 16);
+    const brimMat = new THREE.MeshBasicMaterial({ color: colors.neonBlue });
+    const brimMesh = new THREE.Mesh(brimGeo, brimMat);
+    hatGroup.add(brimMesh);
+
+    // The Top 
+    const hatGeo = new THREE.CylinderGeometry(params.hatRadius * 1.2, params.hatRadius, params.hatHeight, 16);
+    const hatMat = new THREE.MeshBasicMaterial({ color: colors.neonBlue });
+    const hatMesh = new THREE.Mesh(hatGeo, hatMat);
+    
+    hatMesh.position.y = params.hatHeight / 2;
+    hatGroup.add(hatMesh);
+
+    // Add the whole hat to the head
+    head.add(hatGroup);
+
 
     scene.add(head);
     return head;
 }
 
-
-export function makeClown(x, y, z) {}

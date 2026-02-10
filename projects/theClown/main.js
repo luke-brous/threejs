@@ -1,7 +1,9 @@
-
+/* Luke Broussard
+2/9/2026
+The main file for the clown project. This file sets up the scene and calls functions from clown.js to create the clown.
+*/
 import * as THREE from 'three';
 import { TW } from 'tw';
-import GUI from 'https://cdn.jsdelivr.net/npm/lil-gui@0.20/+esm';
 import * as clown from './clown.js';
 
 console.log(`Loaded Three.js version ${THREE.REVISION}`);
@@ -17,32 +19,23 @@ globalThis.scene = scene;
 // ================================================================
 // Scene
 
-
-
 clown.originPoint();
+
 // right leg
 clown.makeLeg(1);
+
 // left leg 
 clown.makeLeg(-1);
+
 // body
-clown.makeBody(0,0,0);
+clown.makeBody();
 
-
+// arms
 clown.makeArm(1);
 clown.makeArm(-1);
 
-clown.makeHead(0,0,0);
-
-
-
-
-
-
-
-
-
-
-
+// head
+clown.makeHead();
 
 // ===============================================================
 
