@@ -1,0 +1,53 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: fig2dev Version 3.2 Patchlevel 5 -->
+<!-- CreationDate: Thu Oct 13 13:16:55 2016 -->
+<!-- Magnification: 1.000 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="5.1in" height="2.7in" viewBox="567 1167 6141 3216">
+<g style="stroke-width:.025in; stroke:black; fill:none">
+<!-- Line -->
+<polyline points="2400,3000
+3600,1200
+4800,3000
+" style="stroke:#000000;stroke-width:30;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line -->
+<polyline points="3600,1275
+3600,2350
+" style="stroke:#803000;stroke-width:30;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Arrowhead on XXXpoint 3600 1275 - 3600 2445-->
+<polyline points="3570 2308
+3600 2428
+3630 2308
+" style="stroke:#803000;stroke-width:7;
+"/>
+<!-- Line -->
+<polyline points="2400,4200
+4800,4200
+" style="stroke:#00d1d1;stroke-width:30;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line -->
+<polyline points="600,4350
+6675,4350
+" style="stroke:#008f8f;stroke-width:30;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line -->
+<polyline points="1800,4275
+5400,4275
+" style="stroke:#00b0b0;stroke-width:30;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line -->
+<polyline points="3000,4125
+4200,4125
+" style="stroke:#00ffff;stroke-width:30;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+</g>
+</svg>
