@@ -37,8 +37,16 @@ function makeBox(width, height, depth) {
     return new THREE.Mesh(geo, mats);
 }
 
-const box = makeBox(4, 6, 8);
+const box = makeBox(100, 100, 100);
 scene.add(box);
+
+
+function wallLight() {
+    const coneGeo = new THREE.ConeGeometry(params.coneRad, params.coneHeight, 16,16,true)
+    const coneMesh = new THREE.MeshStandardMaterial()
+}
+
+
 
 // ================================================================
 
@@ -52,9 +60,9 @@ TW.mainInit(renderer,scene);
 // Set up a camera for the scene
 var state = TW.cameraSetup(renderer,
                            scene,
-                           {minx: -2, maxx: 2,
-                            miny: -3, maxy: 3,
-                            minz: -4, maxz: 4});
+                           {minx: -50, maxx: 50,
+                            miny: -50, maxy: 50,
+                            minz: -50, maxz: 50});
 TW.toggleAxes("show");
 
 
