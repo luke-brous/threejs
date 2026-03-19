@@ -122,8 +122,9 @@ function setBallPosition (time) {
     const angle = time * Math.PI / guiParams.ballBouncePeriod; 
     const abs_cos = Math.abs(Math.cos(angle));
     // TODO: add code to use ballHeightDecay and input time to reduce ballHeight
-
-    const ballHeight = linearMap(abs_cos, 0, 1, 
+    // bHa = bH * D^t
+    const decayedHeight = abs_cos * Math.pow(ballHeightDecay, time);
+    const ballHeight = linearMap(decayedHeight, 0, 1, 
                                  guiParams.ballRadius, guiParams.maxBallHeight);
 
 
@@ -132,8 +133,11 @@ function setBallPosition (time) {
     // TODO: ADD CODE TO USE ballVelocityX AND INPUT time TO COMPUTE THE NEW
     // X POSITION OF THE BALL, SET THE BALL'S X POSITION TO THIS NEW
     // VALUE, AND RETURN AN ARRAY WITH THE BALL'S X POSITION AND HEIGHT
+    x_pos = animationState.ballX +  ballVelocityX * time 
+    animationState.ballX = x_pos
+    values = [animationState.ballX, ballHeight]
 
-    return ballHeight;
+    return values;
 }
 
 function firstState() {
@@ -151,8 +155,9 @@ function updateState() {
     // THE CODE BELOW TO UPDATE THE CORRESPONDING VALUES IN THE
     // animationState OBJECT
 
-    const state = setBallPosition(animationState.time);
-    animationState.ballHeight = state;               
+    const state = setBallPosition(animationState.time); 
+    animationState.ballX = state[0];               
+    animationState.ballHeight = state[1];               
 
     console.log("time is " + animationState.time + " and ball height is " + animationState.ballHeight);
 }
