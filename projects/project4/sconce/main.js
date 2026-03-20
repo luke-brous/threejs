@@ -18,10 +18,10 @@ globalThis.scene = scene;
 
 const lightParams1 = {
     spotlightX: -30,
-    spotlightY: 25,
+    spotlightY: 28,
     spotlightZ: -40,
     spotlightColor: 0xffffff,
-    spotlightIntensity: 20,
+    spotlightIntensity: 30,
     spotlightDistance: 0,
     spotlightAngle: 0.4,
     spotlightPenumbra: 0.05,
@@ -33,10 +33,10 @@ const lightParams1 = {
 
 const lightParams2 = {
     spotlightX: -30,
-    spotlightY: 0,
+    spotlightY: -2,
     spotlightZ: -40,
     spotlightColor: 0xffffff,
-    spotlightIntensity: 20,
+    spotlightIntensity: 30,
     spotlightDistance: 0,
     spotlightAngle: 0.4,
     spotlightPenumbra: 0.05,
@@ -86,7 +86,7 @@ scene.add(box);
 
 function makeSphere(){
     const sphereGeo = new THREE.SphereGeometry(params.sphereRad, 16, 16)
-    const sphereMat = new THREE.MeshPhongMaterial({color: colors[3], specular: 0x444444, shininess: 40})
+    const sphereMat = new THREE.MeshPhongMaterial({color: colors[3], specular: 0xffffff, shininess: 0})
     const sphere = new THREE.Mesh(sphereGeo, sphereMat)
     sphere.position.set(-35, -40, -40)
     scene.add(sphere)
@@ -97,7 +97,7 @@ makeSphere()
 
 function wallLight() {
     const coneGeo = new THREE.ConeGeometry(params.coneRad, params.coneHeight, 16,16,true)
-    const coneMesh = new THREE.MeshPhongMaterial({color: colors[4], side: THREE.DoubleSide})
+    const coneMesh = new THREE.MeshLambertMaterial({color: colors[4], side: THREE.DoubleSide})
     const cone1 = new THREE.Mesh(coneGeo, coneMesh)
     scene.add(cone1)
     cone1.position.set(-30, 8, -40)
@@ -125,6 +125,7 @@ function directionalLight() {
     directionalLight.name = "directionalLight"
     return directionalLight
 }
+
 directionalLight()
 
 function spotLight() {
