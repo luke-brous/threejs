@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keyboard & Mouse Events Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background-color: #f9f9f9;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        section {
+            margin-bottom: 40px;
+        }
+        pre {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: "Courier New", monospace;
+        }
+        .note {
+            background: #fff3cd;
+            padding: 10px;
+            border-left: 5px solid #ffc107;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Keyboard & Mouse Event Demo</h1>
+
+    <!-- Keyboard Section -->
+    <section>
+        <h2>Keyboard Events</h2>
+
+        <p>I have added a keyboard event handler to this webpage. Here's the code:</p>
+
+        <pre><code>
+function handleKey(event) {
+    const code = event.code;
+    const key = event.key;
+    console.log(`code: ${code} and key: ${key}`);
+}
+
+document.addEventListener("keydown", handleKey);
+        </code></pre>
+
+        <p>
+            This script prints useful keyboard event values to the JavaScript console.
+            Open your browser's developer console and try pressing some keys.
+        </p>
+
+        <div class="note">
+            <strong>Note:</strong> The browser window needs to be <em>in focus</em>. 
+            If your keystrokes are going into the console instead, click anywhere on the page first.
+        </div>
+
+        <p>
+            Try letter keys, arrow keys, numbers, punctuation, and more.
+        </p>
+    </section>
+
+    <!-- Mouse Section -->
+    <section>
+        <h2>Mouse Click Events</h2>
+
+        <p>
+            Suppose you want to process mouse clicks. The event you want to bind is,
+            unsurprisingly, <code>click</code>. Here’s the code:
+        </p>
+
+        <pre><code>
+function onMouseClick(event) {
+    const mx = event.clientX;
+    const my = event.clientY;
+    console.log(`click at (${mx}, ${my})`);
+}
+
+document.addEventListener("click", onMouseClick);
+        </code></pre>
+
+        <p>
+            This code logs the mouse click position in the browser window.
+        </p>
+
+        <p>
+            Open the JavaScript console, make sure the document is in focus, and click around the page.
+            Try clicking near the corners:
+        </p>
+
+        <ul>
+            <li>Top-left → small x and y values</li>
+            <li>Top-right → large x, small y</li>
+            <li>Bottom-left → small x, large y</li>
+            <li>Bottom-right → large x and y</li>
+        </ul>
+    </section>
+
+    <script>
+        // Keyboard handler
+        function handleKey(event) {
+            const code = event.code;
+            const key = event.key;
+            console.log(`code: ${code} and key: ${key}`);
+        }
+
+        document.addEventListener("keydown", handleKey);
+
+        // Mouse handler
+        function onMouseClick(event) {
+            const mx = event.clientX;
+            const my = event.clientY;
+            console.log(`click at (${mx}, ${my})`);
+        }
+
+        document.addEventListener("click", onMouseClick);
+    </script>
+
+</body>
+</html>
