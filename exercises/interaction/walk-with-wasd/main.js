@@ -108,11 +108,44 @@ function onKeyDown( event ) {
     case 'KeyD':
         steve.directionVec.setX(-1);
         break;
+    
+    case 'KeyE':
+        steve.directionVec.setX(-1);
+        steve.directionVec.setZ(1);
+    
+    case 'KeyT':
+        steve.position.set(0,0,0);
     }
+
 }
 
 document.addEventListener('keydown', onKeyDown);
 document.addEventListener('keyup', () => steve.directionVec.set(0,0,0));
+
+
+// ================================================================
+// Mouse Callbacks
+
+function onMouseClick( event ) {
+    let mx = event.clientX;
+    let my = event.clientY;
+    console.log("click at (" + mx + "," + my + ")");
+
+    var target = event.target;
+    var rect = target.getBoundingClientRect();
+
+    var cy = my - rect.top;
+    const y = rect.height/2 - cy;
+
+    if (y >= 0) {
+        steve.directionVec.setZ(1);
+    } else {
+        steve.directionVec.setZ(-1);
+    }
+
+}
+
+document.addEventListener('click', onMouseClick);
 
 
 // ================================================================
