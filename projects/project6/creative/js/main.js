@@ -7,7 +7,10 @@
 import * as THREE from 'three';
 import GUI from 'gui';
 import * as CANNON from 'cannon-es';
+import CannonDebugger from 'cannon-es-debugger'
 import car from './car.js'
+import arena from './arena.js'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 console.log(`Loaded Three.js version ${THREE.REVISION}`);
 
@@ -18,12 +21,19 @@ globalThis.CANNON = CANNON;
 // global variables 
 let camera, scene, renderer;
 let world, body;
+let controls;
+let cannonDebugger;
+let arenaInstance;
 
 // Load world
 threeInit()
 cannonInit()
-animate()
 
+
+arenaInstance = arena(scene, world, 100, 100);
+cannonDebugger = new CannonDebugger(scene, world, {})
+
+animate()
 
 
 //===================================================================
@@ -34,24 +44,43 @@ function threeInit() {
 // Create an initial empty Scene
     scene = new THREE.Scene();
     globalThis.scene = scene;
+    scene.background = new THREE.Color(0x87ceeb);
 
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    // Create the axes helper (the number 10 sets the length of the lines)
+    const axesHelper = new THREE.AxesHelper(10);
+    
+    // Set it to invisible by default, just like TW
+    axesHelper.visible = false; 
+    scene.add(axesHelper);
+
+    // Listen for the "a" key to toggle visibility
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'a' || event.key === 'A') {
+            axesHelper.visible = !axesHelper.visible;
+        }
+    });
+
+
+    camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 10000);
 
     // Set initial camera position
     camera.position.set(0, 10, 20); 
     camera.lookAt(0, 0, 0);
 
-    window.addEventListener('resize', onWindowResize, false);
-
-
-
-    // Create a renderer to render the scene
-    renderer = new THREE.WebGLRenderer();
+     // Create a renderer to render the scene
+    renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     document.body.appendChild(renderer.domElement)
 
-    car()
+    controls = new OrbitControls( camera, renderer.domElement );
+    // controls.update() must be called after any manual changes to the camera's transform
+    controls.update();
+
+    
+
+    window.addEventListener('resize', onWindowResize, false);
+
 
 }
 
@@ -78,8 +107,10 @@ function cannonInit() {
 function animate() {
     requestAnimationFrame(animate);
     
+    controls.update();
     
     world.fixedStep();
+    cannonDebugger.update() // Update the CannonDebugger meshes
 
     renderer.render(scene, camera);
 }
