@@ -24,6 +24,7 @@ let world, body;
 let controls;
 let cannonDebugger;
 let arenaInstance;
+let carInstance;
 
 // Load world
 threeInit()
@@ -31,6 +32,7 @@ cannonInit()
 
 
 arenaInstance = arena(scene, world, 100, 100);
+carInstance = car(scene,world)
 cannonDebugger = new CannonDebugger(scene, world, {})
 
 animate()
@@ -55,7 +57,7 @@ function threeInit() {
 
     // Listen for the "a" key to toggle visibility
     window.addEventListener('keydown', (event) => {
-        if (event.key === 'a' || event.key === 'A') {
+        if (event.key === 'x' || event.key === 'X') {
             axesHelper.visible = !axesHelper.visible;
         }
     });
@@ -111,6 +113,7 @@ function animate() {
     
     world.fixedStep();
     cannonDebugger.update() // Update the CannonDebugger meshes
+    carInstance.update()
 
     renderer.render(scene, camera);
 }
