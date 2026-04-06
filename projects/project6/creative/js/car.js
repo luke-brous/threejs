@@ -6,18 +6,33 @@ export default function car(scene, world) {
 
     // 
     const myCar = physics(world)
-    visual(scene)
+    const carMesh = visual(scene)
+
+    
 
     
     return{
         physics: myCar,
-        update: function() {}
+        mesh: carMesh,
+        update: function() {
+            // update car mesh position and rotation based on physics
+            carMesh.chassisMesh.position.copy(myCar.chassisBody.position)
+            carMesh.chassisMesh.quaternion.copy(myCar.chassisBody.quaternion)
+
+            myCar.wheelInfos.forEach((wheel, index) => {
+                const wheelMesh = carMesh.wheelMeshes[index]
+                myCar.updateWheelTransform(index)
+                const transform = myCar.wheelInfos[index].worldTransform
+                wheelMesh.position.copy(transform.position)
+                wheelMesh.quaternion.copy(transform.quaternion)
+            })
+        }
     } 
 }
 
 function physics(world) {
     // use cannon-es raycastVehicle to build car
-    const chassisShape = new CANNON.Box(new CANNON.Vec3(2,0.5,1))
+    const chassisShape = new CANNON.Box(new CANNON.Vec3(2,0.25,1))
     const chassisBody = new CANNON.Body({ mass: 100 })
 
     chassisBody.addShape(chassisShape)
@@ -32,7 +47,7 @@ function physics(world) {
         radius: 0.5,
         directionLocal: new CANNON.Vec3(0, -1, 0),
         axleLocal: new CANNON.Vec3(0, 0, 1),
-        chassisConnectionPointLocal: new CANNON.Vec3(-1, 0, 1),
+        chassisConnectionPointLocal: new CANNON.Vec3(-1.5, 0.2, 1.2),
         suspensionStiffness: 30,
         suspensionRestLength: 0.3,
         maxSuspensionForce: 100000,
@@ -44,20 +59,20 @@ function physics(world) {
 
     }
 
-    wheelParams.chassisConnectionPointLocal.set(-1, 0, 1)
+    wheelParams.chassisConnectionPointLocal.set(-1.5, 0.2, 1.2)
     vehicle.addWheel(wheelParams)
 
-    wheelParams.chassisConnectionPointLocal.set(-1, 0, -1)
+    wheelParams.chassisConnectionPointLocal.set(-1.5, 0.2, -1.2)
     vehicle.addWheel(wheelParams)
 
-    wheelParams.chassisConnectionPointLocal.set(1, 0, 1)
+    wheelParams.chassisConnectionPointLocal.set(1.5, 0.2, 1.2)
     vehicle.addWheel(wheelParams)
 
-    wheelParams.chassisConnectionPointLocal.set(1, 0, -1)
+    wheelParams.chassisConnectionPointLocal.set(1.5, 0.2, -1.2)
     vehicle.addWheel(wheelParams)
 
     window.addEventListener('keydown', (event) => {
-        event.preventDefault()
+        // event.preventDefault()
         const maxSteerVal = 0.5
         const maxForce = 1000
         const brakeForce = 1000000
@@ -92,7 +107,7 @@ function physics(world) {
       })
       // Reset force on keyup
       window.addEventListener('keyup', (event) => {
-        event.preventDefault()
+        // event.preventDefault()
         switch (event.key) {
           case 'w':
           case 'ArrowUp':
@@ -131,5 +146,33 @@ function physics(world) {
 }
 
 function visual(scene) {
+  
 
+  const chassisGeo = new THREE.BoxGeometry(4,0.5,2)
+  const chassisMesh = new THREE.Mesh(chassisGeo, new THREE.MeshBasicMaterial({color: "blue"}))
+  scene.add(chassisMesh)
+
+  const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.3, 16)
+  wheelGeo.rotateX(Math.PI / 2)
+  const wheelMat = new THREE.MeshBasicMaterial({color: "black"})
+  const wheelPositions = [
+    [-1.5, 0.2, 1.2],
+    [-1.5, 0.2, -1.2],
+    [1.5, 0.2, 1.2],
+    [1.5, 0.2, -1.2]
+  ]
+
+
+  const meshesArray = []
+  wheelPositions.forEach(pos => {
+    const wheelMesh = new THREE.Mesh(wheelGeo, wheelMat)
+    meshesArray.push(wheelMesh)
+    wheelMesh.position.set(...pos)
+    scene.add(wheelMesh)
+  })
+
+  return{
+    chassisMesh: chassisMesh,
+    wheelMeshes: meshesArray
+  }
 }
