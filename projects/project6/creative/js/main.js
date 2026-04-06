@@ -31,7 +31,7 @@ threeInit()
 cannonInit()
 
 
-arenaInstance = arena(scene, world, 1000, 1000);
+arenaInstance = arena(scene, world, 100, 100);
 carInstance = car(scene,world)
 cannonDebugger = new CannonDebugger(scene, world, {})
 
