@@ -36,7 +36,7 @@ function physics(world) {
     
     chassisBody.addShape(chassisShape)
     chassisBody.position.set(0, 4, -5)
-    chassisBody.angularVelocity.set(0, 0.5, 0)
+    chassisBody.angularVelocity.set(0, 0, 0)
 
     world.addBody(chassisBody)
 

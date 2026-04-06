@@ -11,25 +11,29 @@ import * as THREE from 'three';
  * @param {*} height 
  * @returns 
  */
+
 export default function arena(scene, world, width, height) {
+    // --- VISUAL MESH ---
     const planeGeo = new THREE.PlaneGeometry(width, height, 16, 16);
-    const planeMesh = new THREE.Mesh(planeGeo, new THREE.MeshBasicMaterial({color: "grey", side: THREE.DoubleSide}))
-    planeMesh.rotation.x = -Math.PI/2
+    const planeMesh = new THREE.Mesh(
+        planeGeo, 
+        new THREE.MeshBasicMaterial({ color: "grey", side: THREE.DoubleSide })
+    );
+    planeMesh.rotation.x = -Math.PI / 2;
+    scene.add(planeMesh);
 
-    scene.add(planeMesh)
-
-    const planeBody = new CANNON.Body({
-        mass: 0, // makes the body static
-        shape: new CANNON.Plane(),
-        material: new CANNON.Material('ground')
-    })
-    planeBody.quaternion.setFromEuler(-Math.PI/2, 0, 0)
-    world.addBody(planeBody)
-
+    // --- PHYSICS BODY ---
+    const floorShape = new CANNON.Box(new CANNON.Vec3(width / 2, 5, height / 2));
+    const planeBody = new CANNON.Body({ mass: 0, shape: floorShape });
+    
+    // Shift the box down to math y=0
+    planeBody.position.y = -5;
+    
+    world.addBody(planeBody);
 
     return {
         mesh: planeMesh,
         body: planeBody,
         update: function() {}
-    }
+    };
 }
