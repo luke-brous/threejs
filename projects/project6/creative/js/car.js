@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+// "Fennec - Rocket League Car" (https://skfb.ly/oopFH) by Jako is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+
+const loader = new GLTFLoader();
 
 export default function car(scene, world) {
 
@@ -29,9 +33,14 @@ export default function car(scene, world) {
 
 function physics(world) {
     // use cannon-es raycastVehicle to build car
-    const chassisShape = new CANNON.Box(new CANNON.Vec3(2,0.25,1))
+    const chassisShape = new CANNON.Box(new CANNON.Vec3(2,0.5,1))
     const chassisBody = new CANNON.Body({ mass: 100 })
 
+    const cabinShape = new CANNON.Box(new CANNON.Vec3(-1, 0.25, 0.9));
+
+    // 3. Add it to the SAME body, but shift it UP and slightly BACK
+    const cabinOffset = new CANNON.Vec3(1, 0.75, 0); 
+    chassisBody.addShape(cabinShape, cabinOffset);
 
     
     chassisBody.addShape(chassisShape)
@@ -149,12 +158,28 @@ function physics(world) {
 
 }
 
+
 function visual(scene) {
   
+  loadFennec(scene)
 
-  const chassisGeo = new THREE.BoxGeometry(4,0.5,2)
+
+  const chassisGeo = new THREE.BoxGeometry(4,1,2)
   const chassisMesh = new THREE.Mesh(chassisGeo, new THREE.MeshBasicMaterial({color: "blue"}))
   scene.add(chassisMesh)
+
+  // const windowMaterial = new THREE.MeshBasicMaterial({color: "lightblue", transparent: true, opacity: 0.7})
+
+  // 2. Create the visual cabin/roof
+  const cabinGeo = new THREE.BoxGeometry(2, 0.5, 1.8);
+  const cabinMat = new THREE.MeshBasicMaterial({color: "blue"})
+  const cabinMesh = new THREE.Mesh(cabinGeo, cabinMat);
+
+  // 3. Position the cabin RELATIVE to the center of the base chassis
+  cabinMesh.position.set(1, 0.75, 0); // Matches the Cannon offset above
+
+  // 4. CRITICAL: Add the cabin TO the chassis, NOT the scene
+  chassisMesh.add(cabinMesh);
 
   const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.3, 16)
   wheelGeo.rotateX(Math.PI / 2)
@@ -178,5 +203,36 @@ function visual(scene) {
   return{
     chassisMesh: chassisMesh,
     wheelMeshes: meshesArray
+  }
+}
+
+// async function loadModel(scene) {
+//   const gltf = await loader.loadAsync('fennec.glb')
+//   scene.add(gltf.scene)
+  
+
+// } 
+// async function loadFennec() {
+//     const fennecData = await loader.loadAsync('fennec.glb');
+//     console.log('Vroom', fennecData);
+//     const fennec = parrotData.scene; // this is actually a Group()
+//     globalThis.fennec = fennec;
+//     const box = new THREE.Box3().setFromObject(fennec);
+//     console.log(box);
+//     scene.add(parrot);
+//     // TW.cameraSetup(renderer,
+//                   //  scene,
+//                   //  TW.objectBoundingBox(parrot));
+// }
+
+
+async function loadFennec(scene) {
+  try {
+    const fennecUrl = new URL('./fennec.glb', import.meta.url).href;
+    const fennecData = await loader.loadAsync(fennecUrl);
+    const fennec = fennecData.scene;
+    scene.add(fennec);
+  } catch (error) {
+    console.error('Failed to load fennec model:', error);
   }
 }
