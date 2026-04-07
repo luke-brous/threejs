@@ -5,10 +5,11 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 // "Fennec - Rocket League Car" (https://skfb.ly/oopFH) by Jako is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
 
 const loader = new GLTFLoader();
+let meshesArray;
 
 export default function car(scene, world) {
 
-    // 
+    
     const myCar = physics(world)
     const carMesh = visual(scene)
     
@@ -36,9 +37,8 @@ function physics(world) {
     const chassisShape = new CANNON.Box(new CANNON.Vec3(2,0.5,1))
     const chassisBody = new CANNON.Body({ mass: 100 })
 
-    const cabinShape = new CANNON.Box(new CANNON.Vec3(-1, 0.25, 0.9));
+    const cabinShape = new CANNON.Box(new CANNON.Vec3(1, 0.25, 0.9));
 
-    // 3. Add it to the SAME body, but shift it UP and slightly BACK
     const cabinOffset = new CANNON.Vec3(1, 0.75, 0); 
     chassisBody.addShape(cabinShape, cabinOffset);
 
@@ -69,16 +69,16 @@ function physics(world) {
 
     }
 
-    wheelParams.chassisConnectionPointLocal.set(-1.5, 0, 1.2)
+    wheelParams.chassisConnectionPointLocal.set(-1.4, 0, 1.0)
     vehicle.addWheel(wheelParams)
 
-    wheelParams.chassisConnectionPointLocal.set(-1.5, 0, -1.2)
+    wheelParams.chassisConnectionPointLocal.set(-1.4, 0, -1.0)
     vehicle.addWheel(wheelParams)
 
-    wheelParams.chassisConnectionPointLocal.set(1.5, 0, 1.2)
+    wheelParams.chassisConnectionPointLocal.set(1.4, 0, 1.0)
     vehicle.addWheel(wheelParams)
 
-    wheelParams.chassisConnectionPointLocal.set(1.5, 0, -1.2)
+    wheelParams.chassisConnectionPointLocal.set(1.4, 0, -1.0)
     vehicle.addWheel(wheelParams)
 
     // const jumpForce = new CANNON.Vec3(0, 1000, 0)
@@ -161,29 +161,16 @@ function physics(world) {
 
 function visual(scene) {
   
-  loadFennec(scene)
 
-
-  const chassisGeo = new THREE.BoxGeometry(4,1,2)
-  const chassisMesh = new THREE.Mesh(chassisGeo, new THREE.MeshBasicMaterial({color: "blue"}))
+  const chassisMesh = new THREE.Group();
   scene.add(chassisMesh)
 
-  // const windowMaterial = new THREE.MeshBasicMaterial({color: "lightblue", transparent: true, opacity: 0.7})
 
-  // 2. Create the visual cabin/roof
-  const cabinGeo = new THREE.BoxGeometry(2, 0.5, 1.8);
-  const cabinMat = new THREE.MeshBasicMaterial({color: "blue"})
-  const cabinMesh = new THREE.Mesh(cabinGeo, cabinMat);
-
-  // 3. Position the cabin RELATIVE to the center of the base chassis
-  cabinMesh.position.set(1, 0.75, 0); // Matches the Cannon offset above
-
-  // 4. CRITICAL: Add the cabin TO the chassis, NOT the scene
-  chassisMesh.add(cabinMesh);
+  loadFennec(chassisMesh, scene)
 
   const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.3, 16)
   wheelGeo.rotateX(Math.PI / 2)
-  const wheelMat = new THREE.MeshBasicMaterial({color: "black"})
+  const wheelMat = new THREE.MeshBasicMaterial({color: "black", visible: false})
   const wheelPositions = [
     [-1.5, 0.2, 1.2],
     [-1.5, 0.2, -1.2],
@@ -192,7 +179,7 @@ function visual(scene) {
   ]
 
 
-  const meshesArray = []
+  meshesArray = []
   wheelPositions.forEach(pos => {
     const wheelMesh = new THREE.Mesh(wheelGeo, wheelMat)
     meshesArray.push(wheelMesh)
@@ -206,32 +193,75 @@ function visual(scene) {
   }
 }
 
-// async function loadModel(scene) {
-//   const gltf = await loader.loadAsync('fennec.glb')
-//   scene.add(gltf.scene)
-  
-
-// } 
-// async function loadFennec() {
-//     const fennecData = await loader.loadAsync('fennec.glb');
-//     console.log('Vroom', fennecData);
-//     const fennec = parrotData.scene; // this is actually a Group()
-//     globalThis.fennec = fennec;
-//     const box = new THREE.Box3().setFromObject(fennec);
-//     console.log(box);
-//     scene.add(parrot);
-//     // TW.cameraSetup(renderer,
-//                   //  scene,
-//                   //  TW.objectBoundingBox(parrot));
-// }
-
-
-async function loadFennec(scene) {
+async function loadFennec(group, scene) {
   try {
-    const fennecUrl = new URL('./fennec.glb', import.meta.url).href;
+    const fennecUrl = new URL('../images/fennec.glb', import.meta.url).href;
     const fennecData = await loader.loadAsync(fennecUrl);
     const fennec = fennecData.scene;
-    scene.add(fennec);
+
+    // 1. Create the empty groups BEFORE the loop
+    const wheelFL = new THREE.Group();
+    const wheelFR = new THREE.Group();
+    const wheelBL = new THREE.Group();
+    const wheelBR = new THREE.Group();
+
+    // 1. Create a safe temporary array
+    const partsToExtract = [];
+
+    // 2. Loop safely: ONLY push to the array, DO NOT use .add() here
+    fennec.traverse((child) => {
+        if (child.isMesh) {
+            if (child.name.includes("FL") || 
+                child.name.includes("FR") || 
+                child.name.includes("BL") || 
+                child.name.includes("BR")) {
+                partsToExtract.push(child);
+            }
+        }
+    });
+
+    partsToExtract.forEach((child) => {
+        
+        // Center the raw geometry, then snap the position to 0,0,0
+        if (child.geometry) {
+          child.geometry = child.geometry.clone();
+          child.geometry.center();
+
+          child.geometry.rotateX(Math.PI / 2);
+        }
+        child.position.set(0, 0, 0);
+
+        if (child.name.includes("FL")) wheelFL.add(child);
+        else if (child.name.includes("FR")) wheelFR.add(child);
+        else if (child.name.includes("BL")) wheelBL.add(child);
+        else if (child.name.includes("BR")) wheelBR.add(child);
+    });
+
+    const carScale = 0.033;
+    wheelFL.scale.set(carScale, carScale, carScale);
+    wheelFR.scale.set(carScale, carScale, carScale);
+    wheelBL.scale.set(carScale, carScale, carScale);
+    wheelBR.scale.set(carScale, carScale, carScale);
+    
+    const wheelScale = 3.0; 
+    wheelFL.scale.set(wheelScale, wheelScale, wheelScale);
+    wheelFR.scale.set(wheelScale, wheelScale, wheelScale);
+    wheelBL.scale.set(wheelScale, wheelScale, wheelScale);
+    wheelBR.scale.set(wheelScale, wheelScale, wheelScale);
+
+    
+    // After the loop finishes sorting the pieces, add the groups to scene and array
+    scene.add(wheelFL, wheelFR, wheelBL, wheelBR);
+    meshesArray[0] = wheelBL;
+    meshesArray[1] = wheelBR;
+    meshesArray[2] = wheelFL;
+    meshesArray[3] = wheelFR;
+    fennecData.scene.scale.set(0.033,0.033,0.033)
+
+    fennec.rotation.y = Math.PI;
+    fennec.position.set(0.1, -0.75, 0);
+
+    group.add(fennec);
   } catch (error) {
     console.error('Failed to load fennec model:', error);
   }

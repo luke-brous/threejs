@@ -10,6 +10,7 @@ import * as CANNON from 'cannon-es';
 import CannonDebugger from 'cannon-es-debugger'
 import car from './car.js'
 import arena from './arena.js'
+import ball from './ball.js'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 console.log(`Loaded Three.js version ${THREE.REVISION}`);
@@ -25,6 +26,7 @@ let controls;
 let cannonDebugger;
 let arenaInstance;
 let carInstance;
+let ballInstance
 
 // Load world
 threeInit()
@@ -33,6 +35,7 @@ cannonInit()
 
 arenaInstance = arena(scene, world, 1000, 1000);
 carInstance = car(scene,world)
+ballInstance = ball(scene,world)
 cannonDebugger = new CannonDebugger(scene, world, {})
 
 animate()
@@ -61,6 +64,10 @@ function threeInit() {
             axesHelper.visible = !axesHelper.visible;
         }
     });
+
+    // lights here for now 
+    const ambLight = new THREE.AmbientLight("white", 2);
+    scene.add(ambLight);
 
 
     camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 10000);
@@ -114,6 +121,7 @@ function animate() {
     world.fixedStep();
     cannonDebugger.update() // Update the CannonDebugger meshes
     carInstance.update()
+    ballInstance.update()
 
     renderer.render(scene, camera);
 }
