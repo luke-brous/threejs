@@ -17,7 +17,7 @@ export default function arena(scene, world, width, height) {
     const planeGeo = new THREE.PlaneGeometry(width, height, 16, 16);
     const planeMesh = new THREE.Mesh(
         planeGeo, 
-        new THREE.MeshBasicMaterial({ color: "grey", side: THREE.DoubleSide })
+        new THREE.MeshPhongMaterial({ color: "green", side: THREE.DoubleSide })
     );
     planeMesh.rotation.x = -Math.PI / 2;
     scene.add(planeMesh);
@@ -31,9 +31,61 @@ export default function arena(scene, world, width, height) {
     
     world.addBody(planeBody);
 
+    testArena(scene)
+    addLatheObject(scene)
+
+    // --- LIGHTS ---
+    lights(scene)
+
     return {
         mesh: planeMesh,
         body: planeBody,
         update: function() {}
     };
+}
+
+function lights(scene) {
+    // lights here for now 
+    const ambLight = new THREE.AmbientLight("white", 2);
+    scene.add(ambLight);
+
+    const pointLight = new THREE.PointLight("white", 10, 0, 0);
+    pointLight.position.set(0, 30, 0);
+    scene.add(pointLight);
+}
+
+function testArena(scene) {
+    const cornerGeo = new THREE.CylinderGeometry(5,5,50)
+    const cornerMat = new THREE.MeshPhongMaterial({color: "grey"})
+    const cornerPos = [
+        [30,20,30],
+        [-30,20,30],
+        [30,20,-30],
+        [-30,20,-30]
+    ]
+    cornerPos.forEach(pos => {
+        const cornerMesh = new THREE.Mesh(cornerGeo, cornerMat)
+        cornerMesh.position.set(...pos)
+        scene.add(cornerMesh)
+
+        
+    });
+
+    
+}
+
+function addLatheObject(scene) {
+    const points = [];
+    points.push(new THREE.Vector2(2.6, 0));
+    points.push(new THREE.Vector2(3.2, 0.5));
+    points.push(new THREE.Vector2(3.4, 10));
+    points.push(new THREE.Vector2(3.2, 11.5));
+    points.push(new THREE.Vector2(2.6, 12));
+
+    const latheGeo = new THREE.LatheGeometry(points, 48);
+    const latheMat = new THREE.MeshPhongMaterial({ color: "#d4af37" });
+    const latheMesh = new THREE.Mesh(latheGeo, latheMat);
+    latheMesh.position.set(0, 0, -20);
+    scene.add(latheMesh);
+    return latheMesh;
 }

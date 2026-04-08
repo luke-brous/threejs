@@ -65,11 +65,6 @@ function threeInit() {
         }
     });
 
-    // lights here for now 
-    const ambLight = new THREE.AmbientLight("white", 2);
-    scene.add(ambLight);
-
-
     camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 10000);
 
     // Set initial camera position

@@ -2,8 +2,6 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-// "Fennec - Rocket League Car" (https://skfb.ly/oopFH) by Jako is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
-
 const loader = new GLTFLoader();
 let meshesArray;
 
@@ -85,9 +83,10 @@ function physics(world) {
 
     window.addEventListener('keydown', (event) => {
         // event.preventDefault()
+        const jumpForce = new CANNON.Vec3(0,700,0)
         const maxSteerVal = 0.5
         const maxForce = 500
-        const brakeForce = 1000000
+        const brakeForce = 10000
         switch (event.key) {
           case 'w':
           case 'ArrowUp':
@@ -109,6 +108,10 @@ function physics(world) {
             vehicle.setSteeringValue(-maxSteerVal, 0)
             vehicle.setSteeringValue(-maxSteerVal, 1)
             break
+          case ' ':
+            // if ()
+            chassisBody.applyImpulse(jumpForce, new CANNON.Vec3(0,0,0))
+            break;
           case 'b':
             vehicle.setBrake(brakeForce, 0)
             vehicle.setBrake(brakeForce, 1)
@@ -193,6 +196,7 @@ function visual(scene) {
   }
 }
 
+// "Fennec - Rocket League Car" (https://skfb.ly/oopFH) by Jako is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
 async function loadFennec(group, scene) {
   try {
     const fennecUrl = new URL('../images/fennec.glb', import.meta.url).href;
