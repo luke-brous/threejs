@@ -24,7 +24,7 @@ export function ballPhysics(world) {
     const sphereShape = new CANNON.Sphere(2)
     const sphereBody = new CANNON.Body({ mass: 1 })
     sphereBody.addShape(sphereShape)
-    sphereBody.position.set(2 * 2, 2 + 1, 2 * 2)
+    sphereBody.position.set(0, 5, 5)
 
     window.addEventListener('keydown', (event) => {
         switch (event.key) {

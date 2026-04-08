@@ -5,7 +5,6 @@
 
 //import three js and all the addons that are used in this script 
 import * as THREE from 'three';
-import GUI from 'gui';
 import * as CANNON from 'cannon-es';
 import CannonDebugger from 'cannon-es-debugger'
 import car from './car.js'
@@ -21,7 +20,7 @@ globalThis.CANNON = CANNON;
 
 // global variables 
 let camera, scene, renderer;
-let world, body;
+let world;
 let controls;
 let cannonDebugger;
 let arenaInstance;
@@ -120,6 +119,3 @@ function animate() {
 
     renderer.render(scene, camera);
 }
-
-
-const gui = new GUI();

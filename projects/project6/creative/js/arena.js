@@ -76,16 +76,16 @@ function testArena(scene) {
 
 function addLatheObject(scene) {
     const points = [];
-    points.push(new THREE.Vector2(2.6, 0));
-    points.push(new THREE.Vector2(3.2, 0.5));
-    points.push(new THREE.Vector2(3.4, 10));
-    points.push(new THREE.Vector2(3.2, 11.5));
+    points.push(new THREE.Vector2(2, 0));
+    points.push(new THREE.Vector2(4, 0.5));
+    points.push(new THREE.Vector2(4, 10));
+    points.push(new THREE.Vector2(3.5, 11.5));
     points.push(new THREE.Vector2(2.6, 12));
 
     const latheGeo = new THREE.LatheGeometry(points, 48);
-    const latheMat = new THREE.MeshPhongMaterial({ color: "#d4af37" });
+    const latheMat = new THREE.MeshPhongMaterial({ color: "gold" });
     const latheMesh = new THREE.Mesh(latheGeo, latheMat);
-    latheMesh.position.set(0, 0, -20);
+    latheMesh.position.set(0, 5, -20);
     scene.add(latheMesh);
     return latheMesh;
 }
