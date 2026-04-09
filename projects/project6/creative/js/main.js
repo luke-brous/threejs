@@ -1,8 +1,3 @@
-/* This scene shows (1) creating several different objects (sphere,
- * cube, cones), (2) specifying colors for them, (3) and placing them
- * in the scene.
-*/
-
 //import three js and all the addons that are used in this script 
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
@@ -31,7 +26,6 @@ let ballInstance
 threeInit()
 cannonInit()
 
-
 arenaInstance = arena(scene, world, 1000, 1000);
 carInstance = car(scene,world)
 ballInstance = ball(scene,world)
@@ -39,13 +33,12 @@ cannonDebugger = new CannonDebugger(scene, world, {})
 
 animate()
 
-
 //===================================================================
 // Set up Three.js
 
 function threeInit() {
     console.log("Initializing Three.js");
-// Create an initial empty Scene
+    // Create an initial empty Scene
     scene = new THREE.Scene();
     globalThis.scene = scene;
     scene.background = new THREE.Color(0x87ceeb);

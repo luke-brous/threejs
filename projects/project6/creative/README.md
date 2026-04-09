@@ -1,3 +1,9 @@
+Luke Broussard
+4/8/2026
+Project 6
+CS360
+Dr. Sowell
+
 # Project 6: Rocket League lite
 
 For project 6 I built a small physics-driven driving playground built with Three.js for rendering and Cannon-es for the physics engine. You control a Rocket League-style car on a large arena floor, with a ball object for collisions.
@@ -47,6 +53,9 @@ The car is implemented with `CANNON.RaycastVehicle`:
 	- 4 raycast wheels, radius `0.5`.
 	- Suspension stiffness, damping, travel, and max force are configured for arcade-like response.
 	- Steering is applied to front wheels; engine force is applied to rear wheels.
+ 	- **Suspension Rays:** The chassis shoots four invisible "lasers" (rays) downward.
+	- **Spring Simulation:** The engine calculates the distance to the floor and applies a counter-force to the chassis to simulate springs and shocks.
+	- **Impulse Logic:** The **Jump** is handled via an `applyImpulse` command, which provides an instantaneous burst of momentum to the center of the `chassisBody`.
 - Controls:
 	- `W` / `ArrowUp`: forward engine force.
 	- `S` / `ArrowDown`: reverse engine force.
@@ -54,19 +63,19 @@ The car is implemented with `CANNON.RaycastVehicle`:
 	- `B`: braking force on all wheels.
 	- `Space`: upward impulse jump on chassis.
 
-Physics behavior highlights:
-- Low `rollInfluence` helps reduce body roll and rollover tendency.
-- Strong brake force enables quick stops.
-- Impulse jump creates short airborne states and landing recovery tests.
-
+- Wheel Parameters:
+| Parameter | Function | Effect |
+| :--- | :--- | :--- |
+| **`radius`** | Physical radius of the wheel | Determines the car's ride height. |
+| **`suspensionStiffness`** | Spring tension | High = Race car handling; Low = Bouncy truck. |
+| **`suspensionRestLength`** | Natural spring state | How high the car sits when stationary. |
+| **`maxSuspensionTravel`** | Compression limit | How far the wheel can move up before hitting the frame. |
+| **`dampingRelaxation`** | Rebound resistance | Prevents the car from oscillating after a jump. |
+| **`dampingCompression`** | Compression resistance | Absorbs the initial impact of a heavy landing. |
+| **`frictionSlip`** | Tire grip | Controls traction; lower values allow for drifting. |
+| **`rollInfluence`** | Body lean | Set low to prevent the car from flipping during turns. |
 ### Ball Physics (`js/ball.js`)
 
-- Dynamic sphere body:
-	- Radius: `2`.
-	- Mass: `1`.
-	- Spawn position: `(0, 5, 5)`.
-- Reset mechanic:
-	- `R` sets the ball back near center (`(0, 5, 0)`).
 
 Physics behavior highlights:
 - The ball acts as a lightweight collision target to test momentum transfer and impact response with the car.
