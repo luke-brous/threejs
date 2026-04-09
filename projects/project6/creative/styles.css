@@ -1,8 +1,25 @@
-body {
-    font-family: Georgia, 'Times New Roman', Times, serif;
+.keys {
+    position: absolute;
+    top: 20px;
+    right: 22px;
+    background: rgba(0, 0, 0, 0.7); /* Dark semi-transparent background */
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    font-family: sans-serif;
+    pointer-events: none; /* Allows mouse clicks to pass through to the game */
+    border: 1px solid #444;
 }
 
-.keys {
-    z-index: 10;
-    
+.keys p {
+    margin: 5px 0;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}   
+
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: sans-serif;
 }

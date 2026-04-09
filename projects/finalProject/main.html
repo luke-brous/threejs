@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Rocket League Lite</title>
+    <style>
+      canvas {
+          display: block;
+          width: 100%;
+          height: 100%;
+      }
+    </style>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+<script type="importmap">
+            {
+                "imports": {
+                    "three": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.module.js",
+                    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.179.1/examples/jsm/",
+                    "tw": "https://cs.wellesley.edu/~cs307/threejs/libs/tw-fa25.js",
+                    "gui": "https://cdn.jsdelivr.net/npm/lil-gui@0.20/+esm",
+                    "cannon-es": "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js",
+                    "cannon-es-debugger": "https://cdn.jsdelivr.net/npm/cannon-es-debugger@1.0.0/dist/cannon-es-debugger.js",
+                    "gltf-loader": "https://cdn.jsdelivr.net/npm/gltf-loader@1.0.0/index.min.js"
+                }
+            }
+</script>
+<script type="module" src="js/main.js"></script>
+<div class="keys">
+    <p>Use WASD to move</p>
+    <p>Space to jump</p>
+    <p>b to brake</p>
+    <p>r to reset the ball</p>
+</div>
+
+</body>
+</html>

@@ -1,3 +1,15 @@
+/**
+ * ISSUES TO WORK ON:
+ * - Add shadows to the scene (cast and receive)
+ * - Fix jump logic so that the car only jumps when it is grounded
+ * - Create the actual arena (goals ceiling walls)
+ * - Add stands and decerations outside of arena
+ * - let the car rotate on an axis
+ * - let the car double jump
+ * - make sure arena has transparency
+ * - fix on screen text
+*/
+
 //import three js and all the addons that are used in this script 
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
@@ -66,6 +78,7 @@ function threeInit() {
      // Create a renderer to render the scene
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true; // Enable shadow mapping
 
     document.body.appendChild(renderer.domElement)
 

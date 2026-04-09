@@ -51,12 +51,16 @@ function lights(scene) {
 
     const pointLight = new THREE.PointLight("white", 10, 0, 0);
     pointLight.position.set(0, 30, 0);
+    pointLight.castShadow = true;   
+
     scene.add(pointLight);
+
+
 }
 
 function testArena(scene) {
     const cornerGeo = new THREE.CylinderGeometry(5,5,50)
-    const cornerMat = new THREE.MeshPhongMaterial({color: "grey"})
+    const cornerMat = new THREE.MeshPhongMaterial({color: "grey", castShadow: true})
     const cornerPos = [
         [30,20,30],
         [-30,20,30],
@@ -83,7 +87,7 @@ function addLatheObject(scene) {
     points.push(new THREE.Vector2(2.6, 12));
 
     const latheGeo = new THREE.LatheGeometry(points, 48);
-    const latheMat = new THREE.MeshPhongMaterial({ color: "gold" });
+    const latheMat = new THREE.MeshPhongMaterial({ color: "gold", castShadow: true });
     const latheMesh = new THREE.Mesh(latheGeo, latheMat);
     latheMesh.position.set(0, 5, -20);
     scene.add(latheMesh);
