@@ -12,3 +12,17 @@
 * **The Doorway:** Instead of one solid back wall, build it using three separate `THREE.BoxGeometry` pieces (a left block, a right block, and a top crossbar) to leave a driveable hole in the center.
 * **The Net Box:** Build a 5-sided recessed structure (floor, back wall, two side walls, ceiling) and place it directly behind the doorway hole.
 * **The Sensor:** Place an invisible `CANNON.Box` inside the net's volume and set it to `isTrigger = true`. This acts as the sensor to detect when the ball crosses the line.
+
+In the original engine, the field is roughly 86 times longer than the average car. Since your car's total length is 4 units (based on your CANNON.Box half-extent of 2), here are the recommended dimensions for your arena.js:
+
+Length: 344 units (Goal-to-Goal).
+
+Width: 276 units (Sidewall-to-Sidewall).
+
+Height: 70 units (Floor-to-Ceiling).
+
+Goal Width: 62 units (Allows ~15 cars to sit side-by-side).
+
+Goal Height: 22 units (Slightly taller than a double-jump height).
+
+Goal Depth: 18 units (The "recessed" area where the ball is caught).
