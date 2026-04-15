@@ -224,6 +224,65 @@ function arenaVisual(scene, width, height) {
     post4.position.set(-(ARENA_CONFIG.goalWidth / 2 + postWidth / 2), ARENA_CONFIG.cageHeight / 2, -ARENA_CONFIG.cageLength / 2);
     arenaGroup.add(post4);
 
+    // --- GOAL POST RAMPS VISUALS ---
+    
+    // 1. Geometry for the Positive Z wall (z = 142)
+    // Sweeps from the Wall (0) down to the Floor (PI/2)
+    const backWallRampGeo = new THREE.CylinderGeometry(
+        ARENA_CONFIG.rampRadius, ARENA_CONFIG.rampRadius, postWidth, 
+        16, 1, true, 
+        0, Math.PI / 2 
+    );
+
+    // 2. Geometry for the Negative Z wall (z = -142)
+    // Sweeps from the Floor (PI/2) back up to the Wall (PI)
+    const frontWallRampGeo = new THREE.CylinderGeometry(
+        ARENA_CONFIG.rampRadius, ARENA_CONFIG.rampRadius, postWidth, 
+        16, 1, true, 
+        Math.PI / 2, Math.PI / 2 
+    );
+
+    // Right side of Positive Z Wall
+    const goalRamp1 = new THREE.Mesh(backWallRampGeo, rampMat);
+    goalRamp1.rotation.z = -Math.PI / 2; // Lay it flat
+    goalRamp1.position.set(
+        ARENA_CONFIG.goalWidth / 2 + postWidth / 2, 
+        ARENA_CONFIG.rampRadius,                    
+        ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.rampRadius 
+    );
+    arenaGroup.add(goalRamp1);
+
+    // Left side of Positive Z Wall
+    const goalRamp2 = new THREE.Mesh(backWallRampGeo, rampMat);
+    goalRamp2.rotation.z = -Math.PI / 2;
+    goalRamp2.position.set(
+        -(ARENA_CONFIG.goalWidth / 2 + postWidth / 2), 
+        ARENA_CONFIG.rampRadius, 
+        ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.rampRadius
+    );
+    arenaGroup.add(goalRamp2);
+
+    // Right side of Negative Z Wall
+    const goalRamp3 = new THREE.Mesh(frontWallRampGeo, rampMat);
+    goalRamp3.rotation.z = -Math.PI / 2;
+    goalRamp3.position.set(
+        ARENA_CONFIG.goalWidth / 2 + postWidth / 2, 
+        ARENA_CONFIG.rampRadius, 
+        -ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.rampRadius
+    );
+    arenaGroup.add(goalRamp3);
+
+    // Left side of Negative Z Wall
+    const goalRamp4 = new THREE.Mesh(frontWallRampGeo, rampMat);
+    goalRamp4.rotation.z = -Math.PI / 2;
+    goalRamp4.position.set(
+        -(ARENA_CONFIG.goalWidth / 2 + postWidth / 2), 
+        ARENA_CONFIG.rampRadius, 
+        -ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.rampRadius
+    );
+    arenaGroup.add(goalRamp4);
+
+
     // --- CROSSBAR VISUALS ---
     const topGoalHeight = ARENA_CONFIG.cageHeight - ARENA_CONFIG.goalHeight;
     const topGoalYPos = ARENA_CONFIG.goalHeight + (topGoalHeight / 2);
