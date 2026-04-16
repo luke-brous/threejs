@@ -183,6 +183,22 @@ function arenaVisual(scene, width, height) {
     );
     arenaGroup.add(rightRamp);
 
+    const topRightRampGeo = new THREE.CylinderGeometry(
+        ARENA_CONFIG.rampRadius, 
+        ARENA_CONFIG.rampRadius, 
+        ARENA_CONFIG.cageLength, 
+        16, 1, true, 
+        Math.PI / 2, Math.PI / 2 // Sweeps from Right Wall to Ceiling
+    );
+    const topRightRamp = new THREE.Mesh(topRightRampGeo, rampMat);
+    topRightRamp.rotation.x = Math.PI / 2;
+    topRightRamp.position.set(
+        ARENA_CONFIG.cageWidth / 2 - ARENA_CONFIG.rampRadius, 
+        ARENA_CONFIG.cageHeight - ARENA_CONFIG.rampRadius, 
+        0
+    );
+    arenaGroup.add(topRightRamp);
+
     // Left Wall Ramp (Negative X)
     const leftRampGeo = new THREE.CylinderGeometry(
         ARENA_CONFIG.rampRadius, 
@@ -199,6 +215,25 @@ function arenaVisual(scene, width, height) {
         0
     );
     arenaGroup.add(leftRamp);
+
+    const topLeftRampGeo = new THREE.CylinderGeometry(
+        ARENA_CONFIG.rampRadius, 
+        ARENA_CONFIG.rampRadius, 
+        ARENA_CONFIG.cageLength, 
+        16, 1, true, 
+        -Math.PI / 2, -Math.PI / 2 // Sweeps from Right Wall to Ceiling
+    );
+
+    const topLeftRamp = new THREE.Mesh(topLeftRampGeo, rampMat);
+    topLeftRamp.rotation.x = Math.PI / 2;
+    topLeftRamp.position.set(
+        -ARENA_CONFIG.cageWidth / 2 + ARENA_CONFIG.rampRadius, 
+        ARENA_CONFIG.cageHeight - ARENA_CONFIG.rampRadius, 
+        0
+    );
+    arenaGroup.add(topLeftRamp);
+
+
 
     // --- GOAL POST VISUALS ---
     const postWidth = (ARENA_CONFIG.cageWidth - ARENA_CONFIG.goalWidth) / 2;
@@ -281,6 +316,41 @@ function arenaVisual(scene, width, height) {
         -ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.rampRadius
     );
     arenaGroup.add(goalRamp4);
+
+    const topGoalWallRampGeo1 = new THREE.CylinderGeometry(
+        ARENA_CONFIG.rampRadius, 
+        ARENA_CONFIG.rampRadius,
+        ARENA_CONFIG.cageWidth,
+        16, 1, true,
+        0, Math.PI / 2 // Sweeps from Back Wall to Ceiling
+    );
+
+    const topGoalWallRamp1 = new THREE.Mesh(topGoalWallRampGeo1, rampMat);
+    topGoalWallRamp1.rotation.z = Math.PI / 2;
+    topGoalWallRamp1.position.set(
+        0, 
+        ARENA_CONFIG.cageHeight - ARENA_CONFIG.rampRadius,
+        ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.rampRadius 
+
+    );
+    arenaGroup.add(topGoalWallRamp1);
+
+    const topGoalWallRampGeo2 = new THREE.CylinderGeometry(
+        ARENA_CONFIG.rampRadius, 
+        ARENA_CONFIG.rampRadius,
+        ARENA_CONFIG.cageWidth,
+        16, 1, true,
+        Math.PI / 2, Math.PI / 2 // Sweeps from Back Wall to Ceiling
+    );
+
+    const topGoalWallRamp2 = new THREE.Mesh(topGoalWallRampGeo2, rampMat);
+    topGoalWallRamp2.rotation.z = Math.PI / 2;
+    topGoalWallRamp2.position.set(
+        0, 
+        ARENA_CONFIG.cageHeight - ARENA_CONFIG.rampRadius,
+        -ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.rampRadius
+    );
+    arenaGroup.add(topGoalWallRamp2);
 
 
     // --- CROSSBAR VISUALS ---
