@@ -2,12 +2,14 @@
  * ISSUES TO WORK ON:
  * - Add shadows to the scene (cast and receive)
  * - Fix jump logic so that the car only jumps when it is grounded
- * - Create the actual arena (goals ceiling walls)
+ * - Create the actual arena (goals ceiling walls) -- done
+ * - Need to fix the ramps so the physics work
  * - Add stands and decerations outside of arena
  * - let the car rotate on an axis
  * - let the car double jump
- * - make sure arena has transparency
- * - fix on screen text
+ * - make sure arena has transparency -- done
+ * - fix on screen text -- done
+ * - add sound effects
 */
 
 //import three js and all the addons that are used in this script 
@@ -38,7 +40,7 @@ let ballInstance
 threeInit()
 cannonInit()
 
-arenaInstance = arena(scene, world, 1000, 1000);
+arenaInstance = arena(scene, world, 1000, 1000, onGoalScored);
 carInstance = car(scene,world)
 ballInstance = ball(scene,world)
 cannonDebugger = new CannonDebugger(scene, world, {})
@@ -124,4 +126,18 @@ function animate() {
     ballInstance.update()
 
     renderer.render(scene, camera);
+}
+
+
+function onGoalScored(team) {
+    console.log(`Goal scored for ${team}!`);
+    // You can also update the UI here to reflect the score change
+    ballInstance.physics.position.set(0, 2, 0);
+    ballInstance.physics.velocity.set(0, 0, 0);
+    ballInstance.physics.angularVelocity.set(0, 0, 0);
+
+    // Reset Car (optional, but keeps things fair)
+    carInstance.physics.chassisBody.position.set(0, 2, -15);
+    carInstance.physics.chassisBody.velocity.set(0, 0, 0);
+    carInstance.physics.chassisBody.quaternion.set(0, 0, 0, 1);
 }

@@ -24,6 +24,7 @@ const loader = new GLTFLoader();
 export default function ball(scene, world) {
     const myBallPhysics = ballPhysics(world)
     const myBallMesh = ballVisuals(scene)
+    myBallPhysics.name = 'ball'; 
 
     return {
         physics: myBallPhysics,

@@ -1,12 +1,18 @@
 Luke Broussard
-4/8/2026
-Project 6
+4/15/2026
+Final Project
 CS360
 Dr. Sowell
 
-# Project 6: Rocket League lite
+# Final Project: Rocket League lite
 
-For project 6 I built a small physics-driven driving playground built with Three.js for rendering and Cannon-es for the physics engine. You control a Rocket League-style car on a large arena floor, with a ball object for collisions.
+For my final project I built a small physics-driven driving playground built with Three.js for rendering and Cannon-es for the physics engine. You control a Rocket League-style car on a large arena floor, with a ball object for collisions.
+
+# Project Draft
+
+I have added the arena to my project. A full three.js + cannon-es physics arena with goals that detect
+when the ball has been scored. Transparency has been added to the outside for ease of viewing.
+Most of the ramps and curves have been added in threejs but still working on the physics side.
 
 ## Files In the irectory
 
@@ -25,7 +31,9 @@ For project 6 I built a small physics-driven driving playground built with Three
 - Drivable 4-wheel vehicle with acceleration, reverse, steering, braking, and jump impulse.
 - Real-time rigid-body simulation with gravity and fixed-step world updates.
 - Dynamic physics ball that collides with the car and floor.
-- Large arena floor with static collision volume and decorative objects.
+- Large arena bounded with physics all around
+- Interactive goals that process when the ball
+is scored
 - Orbit camera controls for free viewing during gameplay.
 - Optional physics debug visualization (`cannon-es-debugger`) for collision shape inspection.
     - Can be seen as the green wire frime around some of the physics objects
@@ -98,7 +106,8 @@ Physics behavior highlights:
 - Renderer: antialiased `WebGLRenderer`, responsive resize handling.
 - Lighting: ambient + point light in `arena.js` for model visibility.
 - Models: GLTF assets loaded asynchronously and attached to grouped meshes.
-- Decorative geometry: cylinders and a lathe-built gold object provide scene context.
+- Added meshes to the arena to visualize it as well
+as adding transperency for a better scene
 
 ## Controls
 
@@ -111,10 +120,9 @@ Physics behavior highlights:
 
 ## Known Limitations
 
-- Actual arena is not built, scoring, or win conditions yet.
 - Jump has no grounded-state check, so repeated midair impulses may be possible (double jumps should be possible however).
-- Car rotations needs to be possible, rotating itself
-on an axis.
+- Car rotations needs to be possible, rotating itself on an axis.
+- Other issues are listed at the top of main.js
 
 
 

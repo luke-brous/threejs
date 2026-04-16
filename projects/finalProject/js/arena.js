@@ -2,19 +2,20 @@ import * as CANNON from 'cannon-es';
 import * as THREE from 'three';
 
 const ARENA_CONFIG = {
-    // Ratios are trued to match rocket league
+    // Ratios are tuned to match rocket league
     cageWidth: 227,   
     cageLength: 284,  
     cageHeight: 56,   
     wallThickness: 2, 
 
     rampRadius: 10,
+
     //  Goal Dimensions
     goalWidth: 50,
     goalHeight: 18,
-    goalDepth: 10,    
+    goalDepth: 34,    
 
-    // World Floor (The grass outside)
+    // World Floor 
     worldWidth: 1000,
     worldLength: 1000
 };
@@ -23,9 +24,9 @@ const ARENA_CONFIG = {
  * @abstract This is the arena which will be the "field" for the car to drive around in.
  * It meshes three.js and cannon-es.js together to create a plane in both the physics world and the rendering world.
  */
-export default function arena(scene, world, width, height) {
+export default function arena(scene, world, width, height, onGoalScored) {
     
-    const arenaBody = arenaPhysics(world, width, height);
+    const arenaBody = arenaPhysics(world, width, height, onGoalScored);
     const arenaMesh = arenaVisual(scene, width, height);
 
     // --- LIGHTS ---
@@ -48,7 +49,7 @@ function lights(scene) {
     scene.add(pointLight);
 }
 
-function arenaPhysics(world, width, height) {
+function arenaPhysics(world, width, height, onGoalScored) {
 
     // --- WORLD FLOOR PHYSICS ---
     const floorShape = new CANNON.Box(new CANNON.Vec3(width / 2, 5, height / 2));
@@ -75,7 +76,7 @@ function arenaPhysics(world, width, height) {
 
     // --- GOAL WALL SIDE POSTS ---
     const postWidth = (ARENA_CONFIG.cageWidth - ARENA_CONFIG.goalWidth) / 2;
-    const goalWallShape = new CANNON.Box(
+    const backWallShape = new CANNON.Box(
         new CANNON.Vec3(
             postWidth / 2,
             ARENA_CONFIG.cageHeight / 2,
@@ -83,25 +84,25 @@ function arenaPhysics(world, width, height) {
         )
     );
 
-    const goalWall1 = new CANNON.Body({ mass: 0, shape: goalWallShape });
-    goalWall1.position.set(ARENA_CONFIG.goalWidth / 2 + postWidth / 2, ARENA_CONFIG.cageHeight / 2, ARENA_CONFIG.cageLength / 2);
-    world.addBody(goalWall1);
+    const backWall1 = new CANNON.Body({ mass: 0, shape: backWallShape });
+    backWall1.position.set(ARENA_CONFIG.goalWidth / 2 + postWidth / 2, ARENA_CONFIG.cageHeight / 2, ARENA_CONFIG.cageLength / 2);
+    world.addBody(backWall1);
 
-    const goalWall2 = new CANNON.Body({ mass: 0, shape: goalWallShape });
-    goalWall2.position.set(-(ARENA_CONFIG.goalWidth / 2 + postWidth / 2), ARENA_CONFIG.cageHeight / 2, ARENA_CONFIG.cageLength / 2);
-    world.addBody(goalWall2);
+    const backWall2 = new CANNON.Body({ mass: 0, shape: backWallShape });
+    backWall2.position.set(-(ARENA_CONFIG.goalWidth / 2 + postWidth / 2), ARENA_CONFIG.cageHeight / 2, ARENA_CONFIG.cageLength / 2);
+    world.addBody(backWall2);
 
-    const goalWall3 = new CANNON.Body({ mass: 0, shape: goalWallShape });
-    goalWall3.position.set(ARENA_CONFIG.goalWidth / 2 + postWidth / 2, ARENA_CONFIG.cageHeight / 2, -ARENA_CONFIG.cageLength / 2);
-    world.addBody(goalWall3);
+    const backWall3 = new CANNON.Body({ mass: 0, shape: backWallShape });
+    backWall3.position.set(ARENA_CONFIG.goalWidth / 2 + postWidth / 2, ARENA_CONFIG.cageHeight / 2, -ARENA_CONFIG.cageLength / 2);
+    world.addBody(backWall3);
 
-    const goalWall4 = new CANNON.Body({ mass: 0, shape: goalWallShape });
-    goalWall4.position.set(-(ARENA_CONFIG.goalWidth / 2 + postWidth / 2), ARENA_CONFIG.cageHeight / 2, -ARENA_CONFIG.cageLength / 2);
-    world.addBody(goalWall4);
+    const backWall4 = new CANNON.Body({ mass: 0, shape: backWallShape });
+    backWall4.position.set(-(ARENA_CONFIG.goalWidth / 2 + postWidth / 2), ARENA_CONFIG.cageHeight / 2, -ARENA_CONFIG.cageLength / 2);
+    world.addBody(backWall4);
 
-    // --- GOAL WALL CROSSBARS (Top Pieces) ---
+    // --- Back Wall Pieces ---
     const topGoalHeight = ARENA_CONFIG.cageHeight - ARENA_CONFIG.goalHeight;
-    const topGoalShape = new CANNON.Box(
+    const topGoalWallShape = new CANNON.Box(
         new CANNON.Vec3(
             ARENA_CONFIG.goalWidth / 2,
             topGoalHeight / 2,
@@ -111,32 +112,152 @@ function arenaPhysics(world, width, height) {
     
     const topGoalYPos = ARENA_CONFIG.goalHeight + (topGoalHeight / 2);
 
-    const topGoalWall1 = new CANNON.Body({ mass: 0, shape: topGoalShape });
+    const topGoalWall1 = new CANNON.Body({ mass: 0, shape: topGoalWallShape });
     topGoalWall1.position.set(0, topGoalYPos, ARENA_CONFIG.cageLength / 2);
     world.addBody(topGoalWall1);
 
-    const topGoalWall2 = new CANNON.Body({ mass: 0, shape: topGoalShape });
+    const topGoalWall2 = new CANNON.Body({ mass: 0, shape: topGoalWallShape });
     topGoalWall2.position.set(0, topGoalYPos, -ARENA_CONFIG.cageLength / 2);
     world.addBody(topGoalWall2);
 
-    // Ceiling
+    // --- Ceiling ---
     const ceilingShape = new CANNON.Box(new CANNON.Vec3(ARENA_CONFIG.cageWidth / 2, ARENA_CONFIG.wallThickness, ARENA_CONFIG.cageLength / 2));
     const ceilingBody = new CANNON.Body({ mass: 0, shape: ceilingShape });
     ceilingBody.position.set(0, ARENA_CONFIG.cageHeight + (ARENA_CONFIG.wallThickness / 2), 0);
     world.addBody(ceilingBody);
 
+
+    // --- Goal Pieces --- 
+    const backGoalShape = new CANNON.Box(
+        new CANNON.Vec3(
+            ARENA_CONFIG.goalWidth / 2,
+            ARENA_CONFIG.goalHeight / 2,
+            ARENA_CONFIG.wallThickness / 2
+        )
+    );
+
+    const topGoalShape = new CANNON.Box(
+        new CANNON.Vec3(
+            ARENA_CONFIG.goalWidth / 2,
+            ARENA_CONFIG.wallThickness / 2,
+            ARENA_CONFIG.goalDepth / 4
+        )
+    );
+
+    const sideGoalShape = new CANNON.Box(
+        new CANNON.Vec3(
+            ARENA_CONFIG.wallThickness / 2,
+            ARENA_CONFIG.goalHeight / 2,
+            ARENA_CONFIG.goalDepth / 4
+        )
+    );
+
+    const sideGoalWall1 = new CANNON.Body({ mass: 0, shape: sideGoalShape });
+    sideGoalWall1.position.set(
+        ARENA_CONFIG.goalWidth / 2 + ARENA_CONFIG.wallThickness / 2, 
+        ARENA_CONFIG.goalHeight / 2, 
+        ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.goalDepth / 4);
+    world.addBody(sideGoalWall1);
+
+    const sideGoalWall2 = new CANNON.Body({ mass: 0, shape: sideGoalShape });
+    sideGoalWall2.position.set(
+        -ARENA_CONFIG.goalWidth / 2 - ARENA_CONFIG.wallThickness / 2, 
+        ARENA_CONFIG.goalHeight / 2, 
+        ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.goalDepth / 4);
+    world.addBody(sideGoalWall2);
+
+    const sideGoalWall3 = new CANNON.Body({ mass: 0, shape: sideGoalShape });
+    sideGoalWall3.position.set(
+        ARENA_CONFIG.goalWidth / 2 + ARENA_CONFIG.wallThickness / 2, 
+        ARENA_CONFIG.goalHeight / 2, 
+        -ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.goalDepth / 4);
+    world.addBody(sideGoalWall3);
+
+    const sideGoalWall4 = new CANNON.Body({ mass: 0, shape: sideGoalShape });
+    sideGoalWall4.position.set(
+        -ARENA_CONFIG.goalWidth / 2 - ARENA_CONFIG.wallThickness / 2, 
+        ARENA_CONFIG.goalHeight / 2, 
+        -ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.goalDepth / 4);
+    world.addBody(sideGoalWall4);
+
+    const topGoalBody1 = new CANNON.Body({ mass: 0, shape: topGoalShape });
+    topGoalBody1.position.set(
+        0, 
+        ARENA_CONFIG.goalHeight + ARENA_CONFIG.wallThickness / 2, 
+        ARENA_CONFIG.cageLength / 2 + (ARENA_CONFIG.goalDepth / 4));
+    world.addBody(topGoalBody1);
+
+    const topGoalBody2 = new CANNON.Body({ mass: 0, shape: topGoalShape });
+    topGoalBody2.position.set(
+        0, 
+        ARENA_CONFIG.goalHeight + (ARENA_CONFIG.wallThickness / 2), 
+        -ARENA_CONFIG.cageLength / 2 - (ARENA_CONFIG.goalDepth / 4));
+    world.addBody(topGoalBody2);
+
+
+    const backGoalBody1 = new CANNON.Body({ mass: 0, shape: backGoalShape });
+    backGoalBody1.position.set(0, ARENA_CONFIG.goalHeight / 2, ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.goalDepth / 2);
+    world.addBody(backGoalBody1);
+
+
+    const backGoalBody2 = new CANNON.Body({ mass: 0, shape: backGoalShape });
+    backGoalBody2.position.set(0, ARENA_CONFIG.goalHeight / 2, -ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.goalDepth / 2);
+    world.addBody(backGoalBody2);
+
+    // --- Goal Sensor ---
+    const goalSensorShape = new CANNON.Box(
+        new CANNON.Vec3(
+            ARENA_CONFIG.goalWidth / 2,
+            ARENA_CONFIG.goalHeight / 2,
+            ARENA_CONFIG.goalDepth / 4
+        )
+    );
+    const goalSensorBody1 = new CANNON.Body({ mass: 0, shape: goalSensorShape, type: CANNON.Body.KINEMATIC });
+    goalSensorBody1.position.set(0, ARENA_CONFIG.goalHeight / 2, ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.goalDepth / 4);
+    goalSensorBody1.collisionResponse = false; // Blocks collision and triggers event only
+    world.addBody(goalSensorBody1);
+
+    const goalSensorBody2 = new CANNON.Body({ mass: 0, shape: goalSensorShape, type: CANNON.Body.KINEMATIC });
+    goalSensorBody2.position.set(0, ARENA_CONFIG.goalHeight / 2, -ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.goalDepth / 4);
+    goalSensorBody2.collisionResponse = false;
+    world.addBody(goalSensorBody2);
+
+    const goalSensors = [goalSensorBody1, goalSensorBody2];
+
+    // Event listeners for goal scoring for both teams
+    goalSensorBody2.addEventListener('collide', (event) => {
+        if (event.body.name === 'ball') { 
+            console.log("GOAL SCORED!");
+            if (onGoalScored) {
+                onGoalScored('blue'); // Call the function w the scoring team
+            }
+
+        }
+    });
+
+    goalSensorBody1.addEventListener('collide', (event) => {
+        if (event.body.name === 'ball') { 
+            console.log("GOAL SCORED!");
+            if (onGoalScored) {   
+                onGoalScored('orange'); 
+            }
+        }
+    });
+
     return {
         floor: floorBody,
         sidewall1: sidewallBody1,
         sidewall2: sidewallBody2,
-        goalWalls: [goalWall1, goalWall2, goalWall3, goalWall4, topGoalWall1, topGoalWall2],
-        ceiling: ceilingBody
+        goalWalls: [backWall1, backWall2, backWall3, backWall4, topGoalWall1, topGoalWall2],
+        ceiling: ceilingBody,
+        goalSensors: [goalSensorBody1, goalSensorBody2]
+
     };
 }
 
 function arenaVisual(scene, width, height) {
     const arenaGroup = new THREE.Group();
-    const wallMat = new THREE.MeshPhongMaterial({ color: "#444" });
+    const wallMat = new THREE.MeshPhongMaterial({ color: "#444", side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
 
     // --- WORLD FLOOR VISUAL ---
     const planeGeo = new THREE.PlaneGeometry(width, height, 16, 16);
@@ -163,19 +284,18 @@ function arenaVisual(scene, width, height) {
     arenaGroup.add(sideWall2);
 
     // --- SIDE RAMP VISUALS ---
-    const rampMat = new THREE.MeshPhongMaterial({ color: "#444", side: THREE.DoubleSide });
+    const rampMat = new THREE.MeshPhongMaterial({ color: "#444", side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
 
-    // Right Wall Ramp (Positive X)
+    // Right Wall Ramp (+X direction)
     const rightRampGeo = new THREE.CylinderGeometry(
         ARENA_CONFIG.rampRadius, 
         ARENA_CONFIG.rampRadius, 
         ARENA_CONFIG.cageLength, 
         16, 1, true, 
-        0, Math.PI / 2 // Sweeps from Floor to Right Wall
+        0, Math.PI / 2 // Theta sweeps from the floor to the wall
     );
     const rightRamp = new THREE.Mesh(rightRampGeo, rampMat);
     rightRamp.rotation.x = Math.PI / 2;
-    // Hover the center of the cylinder so the edges touch the floor and wall
     rightRamp.position.set(
         ARENA_CONFIG.cageWidth / 2 - ARENA_CONFIG.rampRadius, 
         ARENA_CONFIG.rampRadius, 
@@ -188,7 +308,7 @@ function arenaVisual(scene, width, height) {
         ARENA_CONFIG.rampRadius, 
         ARENA_CONFIG.cageLength, 
         16, 1, true, 
-        Math.PI / 2, Math.PI / 2 // Sweeps from Right Wall to Ceiling
+        Math.PI / 2, Math.PI / 2 // sweeps from Right Wall to Ceiling
     );
     const topRightRamp = new THREE.Mesh(topRightRampGeo, rampMat);
     topRightRamp.rotation.x = Math.PI / 2;
@@ -199,13 +319,13 @@ function arenaVisual(scene, width, height) {
     );
     arenaGroup.add(topRightRamp);
 
-    // Left Wall Ramp (Negative X)
+    // Left Wall Ramp (+X direction)
     const leftRampGeo = new THREE.CylinderGeometry(
         ARENA_CONFIG.rampRadius, 
         ARENA_CONFIG.rampRadius, 
         ARENA_CONFIG.cageLength, 
         16, 1, true, 
-        Math.PI * 1.5, Math.PI / 2 // Sweeps from Left Wall to Floor
+        Math.PI * 1.5, Math.PI / 2 // sweeps from floor to left wall
     );
     const leftRamp = new THREE.Mesh(leftRampGeo, rampMat);
     leftRamp.rotation.x = Math.PI / 2;
@@ -259,25 +379,21 @@ function arenaVisual(scene, width, height) {
     post4.position.set(-(ARENA_CONFIG.goalWidth / 2 + postWidth / 2), ARENA_CONFIG.cageHeight / 2, -ARENA_CONFIG.cageLength / 2);
     arenaGroup.add(post4);
 
-    // --- GOAL POST RAMPS VISUALS ---
+    // --- Back Wall visuals ---
     
-    // 1. Geometry for the Positive Z wall (z = 142)
-    // Sweeps from the Wall (0) down to the Floor (PI/2)
     const backWallRampGeo = new THREE.CylinderGeometry(
         ARENA_CONFIG.rampRadius, ARENA_CONFIG.rampRadius, postWidth, 
         16, 1, true, 
         0, Math.PI / 2 
     );
 
-    // 2. Geometry for the Negative Z wall (z = -142)
-    // Sweeps from the Floor (PI/2) back up to the Wall (PI)
     const frontWallRampGeo = new THREE.CylinderGeometry(
         ARENA_CONFIG.rampRadius, ARENA_CONFIG.rampRadius, postWidth, 
         16, 1, true, 
         Math.PI / 2, Math.PI / 2 
     );
 
-    // Right side of Positive Z Wall
+    // Right side of Positive z Wall
     const goalRamp1 = new THREE.Mesh(backWallRampGeo, rampMat);
     goalRamp1.rotation.z = -Math.PI / 2; // Lay it flat
     goalRamp1.position.set(
@@ -287,7 +403,7 @@ function arenaVisual(scene, width, height) {
     );
     arenaGroup.add(goalRamp1);
 
-    // Left side of Positive Z Wall
+    // Left side of Positive z Wall
     const goalRamp2 = new THREE.Mesh(backWallRampGeo, rampMat);
     goalRamp2.rotation.z = -Math.PI / 2;
     goalRamp2.position.set(
@@ -297,7 +413,7 @@ function arenaVisual(scene, width, height) {
     );
     arenaGroup.add(goalRamp2);
 
-    // Right side of Negative Z Wall
+    // Right side of Negative z Wall
     const goalRamp3 = new THREE.Mesh(frontWallRampGeo, rampMat);
     goalRamp3.rotation.z = -Math.PI / 2;
     goalRamp3.position.set(
@@ -307,7 +423,7 @@ function arenaVisual(scene, width, height) {
     );
     arenaGroup.add(goalRamp3);
 
-    // Left side of Negative Z Wall
+    // Left side of Negative z Wall
     const goalRamp4 = new THREE.Mesh(frontWallRampGeo, rampMat);
     goalRamp4.rotation.z = -Math.PI / 2;
     goalRamp4.position.set(
@@ -322,7 +438,7 @@ function arenaVisual(scene, width, height) {
         ARENA_CONFIG.rampRadius,
         ARENA_CONFIG.cageWidth,
         16, 1, true,
-        0, Math.PI / 2 // Sweeps from Back Wall to Ceiling
+        0, Math.PI / 2 
     );
 
     const topGoalWallRamp1 = new THREE.Mesh(topGoalWallRampGeo1, rampMat);
@@ -340,7 +456,7 @@ function arenaVisual(scene, width, height) {
         ARENA_CONFIG.rampRadius,
         ARENA_CONFIG.cageWidth,
         16, 1, true,
-        Math.PI / 2, Math.PI / 2 // Sweeps from Back Wall to Ceiling
+        Math.PI / 2, Math.PI / 2 
     );
 
     const topGoalWallRamp2 = new THREE.Mesh(topGoalWallRampGeo2, rampMat);
@@ -353,7 +469,7 @@ function arenaVisual(scene, width, height) {
     arenaGroup.add(topGoalWallRamp2);
 
 
-    // --- CROSSBAR VISUALS ---
+    // --- crossbar visuals (piece right above the goal) ---
     const topGoalHeight = ARENA_CONFIG.cageHeight - ARENA_CONFIG.goalHeight;
     const topGoalYPos = ARENA_CONFIG.goalHeight + (topGoalHeight / 2);
     const crossbarGeo = new THREE.BoxGeometry(
@@ -376,7 +492,73 @@ function arenaVisual(scene, width, height) {
     ceilingMesh.position.set(0, ARENA_CONFIG.cageHeight + (ARENA_CONFIG.wallThickness / 2), 0);
     arenaGroup.add(ceilingMesh);
 
+    // --- Goal Meshes (matching the physics again) ---
+    const orangeNetMat = new THREE.MeshPhongMaterial({ color: "orange" });
+    const blueNetMat = new THREE.MeshPhongMaterial({ color: "blue" });
+
+    // Geometries matching the physics shapes exactly (using full dimensions, not half-extents like the physics)
+    const sideGoalGeo = new THREE.BoxGeometry(
+        ARENA_CONFIG.wallThickness,
+        ARENA_CONFIG.goalHeight,
+        ARENA_CONFIG.goalDepth / 2
+    );
+
+    const topGoalGeo = new THREE.BoxGeometry(
+        ARENA_CONFIG.goalWidth,
+        ARENA_CONFIG.wallThickness,
+        ARENA_CONFIG.goalDepth / 2 
+    );
+
+    const backGoalGeo = new THREE.BoxGeometry(
+        ARENA_CONFIG.goalWidth,
+        ARENA_CONFIG.goalHeight,
+        ARENA_CONFIG.wallThickness 
+    );
+
+    // Use the depth and width from the physics
+    const depthOffset = ARENA_CONFIG.goalDepth / 4;
+    const widthOffset = ARENA_CONFIG.goalWidth / 2 + ARENA_CONFIG.wallThickness / 2;
+
+    // --- Positive Z Goal (Blue Side) ---
+    const posZ = ARENA_CONFIG.cageLength / 2;
+
+    const netSide1 = new THREE.Mesh(sideGoalGeo, blueNetMat);
+    netSide1.position.set(widthOffset, ARENA_CONFIG.goalHeight / 2, posZ + depthOffset);
+    arenaGroup.add(netSide1);
+
+    const netSide2 = new THREE.Mesh(sideGoalGeo, blueNetMat);
+    netSide2.position.set(-widthOffset, ARENA_CONFIG.goalHeight / 2, posZ + depthOffset);
+    arenaGroup.add(netSide2);
+
+    const netTop1 = new THREE.Mesh(topGoalGeo, blueNetMat);
+    netTop1.position.set(0, ARENA_CONFIG.goalHeight + ARENA_CONFIG.wallThickness / 2, posZ + depthOffset);
+    arenaGroup.add(netTop1);
+
+    const netBack1 = new THREE.Mesh(backGoalGeo, blueNetMat);
+    netBack1.position.set(0, ARENA_CONFIG.goalHeight / 2, posZ + ARENA_CONFIG.goalDepth / 2);
+    arenaGroup.add(netBack1);
+
+    // --- Negative Z Goal (Orange Side) ---
+    const negZ = -ARENA_CONFIG.cageLength / 2;
+
+    const netSide3 = new THREE.Mesh(sideGoalGeo, orangeNetMat);
+    netSide3.position.set(widthOffset, ARENA_CONFIG.goalHeight / 2, negZ - depthOffset);
+    arenaGroup.add(netSide3);
+
+    const netSide4 = new THREE.Mesh(sideGoalGeo, orangeNetMat);
+    netSide4.position.set(-widthOffset, ARENA_CONFIG.goalHeight / 2, negZ - depthOffset);
+    arenaGroup.add(netSide4);
+
+    const netTop2 = new THREE.Mesh(topGoalGeo, orangeNetMat);
+    netTop2.position.set(0, ARENA_CONFIG.goalHeight + ARENA_CONFIG.wallThickness / 2, negZ - depthOffset);
+    arenaGroup.add(netTop2);
+
+    const netBack2 = new THREE.Mesh(backGoalGeo, orangeNetMat);
+    netBack2.position.set(0, ARENA_CONFIG.goalHeight / 2, negZ - ARENA_CONFIG.goalDepth / 2);
+    arenaGroup.add(netBack2);
+
     scene.add(arenaGroup);
 
     return arenaGroup;
 }
+
