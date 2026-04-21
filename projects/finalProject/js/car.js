@@ -32,12 +32,12 @@ export default function car(scene, world) {
 
 function physics(world) {
     // use cannon-es raycastVehicle to build car
-    const chassisShape = new CANNON.Box(new CANNON.Vec3(2,0.5,1))
+    const chassisShape = new CANNON.Box(new CANNON.Vec3(2,0.3,1))
     const chassisBody = new CANNON.Body({ mass: 100 })
 
     const cabinShape = new CANNON.Box(new CANNON.Vec3(1, 0.25, 0.9));
 
-    const topOffset = new CANNON.Vec3(1, 0.75, 0); 
+    const topOffset = new CANNON.Vec3(1, 0.55, 0); 
     chassisBody.addShape(cabinShape, topOffset);
 
     
@@ -57,7 +57,7 @@ function physics(world) {
         axleLocal: new CANNON.Vec3(0, 0, 1), // point where the wheel is attached to the chassis, relative to the center of mass
         chassisConnectionPointLocal: new CANNON.Vec3(-1.5, 0, 1.2), // position of the wheel relative to the chassis
         suspensionStiffness: 100, // how stiff the suspension is
-        suspensionRestLength: 0.4, // how long the suspension is when it's not compressed
+        suspensionRestLength: 0.45, // how long the suspension is when it's not compressed
         maxSuspensionForce: 10000, // maximum force the suspension can apply
         maxSuspensionTravel: 1.0, // maximum distance the suspension can compress
         dampingRelaxation: 2.3, // how much the suspension resists compression

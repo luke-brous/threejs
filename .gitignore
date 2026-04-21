@@ -17,3 +17,6 @@ node_modules/
 *.zip
 *.tar.gz
 *.rar
+
+# ignore gemini files
+GEMINI.*

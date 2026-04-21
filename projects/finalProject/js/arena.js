@@ -284,7 +284,7 @@ function arenaVisual(scene, width, height) {
     arenaGroup.add(sideWall2);
 
     // --- SIDE RAMP VISUALS ---
-    const rampMat = new THREE.MeshPhongMaterial({ color: "#444", side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+    const rampMat = new THREE.MeshPhongMaterial({ color: "#444", side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
 
     // Right Wall Ramp (+X direction)
     const rightRampGeo = new THREE.CylinderGeometry(
@@ -353,6 +353,58 @@ function arenaVisual(scene, width, height) {
     );
     arenaGroup.add(topLeftRamp);
 
+    // --- CORNER RAMP VISUALS (Vertical Cylinders) ---
+    const cornerRampGeo = new THREE.CylinderGeometry(
+        ARENA_CONFIG.rampRadius, 
+        ARENA_CONFIG.rampRadius, 
+        ARENA_CONFIG.cageHeight, 
+        16, 1, true, 
+        0, Math.PI / 2 // Sweeps 90 degrees
+    );
+    
+    // Front-Right Corner Ramp (+X, +Z)
+    const frCornerRamp = new THREE.Mesh(cornerRampGeo, rampMat);
+    frCornerRamp.rotation.y = 0; // Sweeps from Right Wall (+X) to Front Wall (+Z)
+    frCornerRamp.position.set(
+        ARENA_CONFIG.cageWidth / 2 - ARENA_CONFIG.rampRadius, 
+        ARENA_CONFIG.cageHeight / 2, 
+        ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.rampRadius
+    );
+    frCornerRamp.frustumCulled = false; // Prevents disappearing when close
+    arenaGroup.add(frCornerRamp);
+    
+    // Front-Left Corner Ramp (-X, +Z)
+    const flCornerRamp = new THREE.Mesh(cornerRampGeo, rampMat);
+    flCornerRamp.rotation.y = Math.PI / 2; // Sweeps from Front Wall (+Z) to Left Wall (-X)
+    flCornerRamp.position.set(
+        -ARENA_CONFIG.cageWidth / 2 + ARENA_CONFIG.rampRadius, 
+        ARENA_CONFIG.cageHeight / 2, 
+        ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.rampRadius
+    );
+    flCornerRamp.frustumCulled = false;
+    arenaGroup.add(flCornerRamp);
+    
+    // Back-Left Corner Ramp (-X, -Z)
+    const blCornerRamp = new THREE.Mesh(cornerRampGeo, rampMat);
+    blCornerRamp.rotation.y = Math.PI; // Sweeps from Left Wall (-X) to Back Wall (-Z)
+    blCornerRamp.position.set(
+        -ARENA_CONFIG.cageWidth / 2 + ARENA_CONFIG.rampRadius, 
+        ARENA_CONFIG.cageHeight / 2, 
+        -ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.rampRadius
+    );
+    blCornerRamp.frustumCulled = false;
+    arenaGroup.add(blCornerRamp);
+    
+    // Back-Right Corner Ramp (+X, -Z)
+    const brCornerRamp = new THREE.Mesh(cornerRampGeo, rampMat);
+    brCornerRamp.rotation.y = Math.PI * 1.5; // Sweeps from Back Wall (-Z) to Right Wall (+X)
+    brCornerRamp.position.set(
+        ARENA_CONFIG.cageWidth / 2 - ARENA_CONFIG.rampRadius, 
+        ARENA_CONFIG.cageHeight / 2, 
+        -ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.rampRadius
+    );
+    brCornerRamp.frustumCulled = false;
+    arenaGroup.add(brCornerRamp);
 
 
     // --- GOAL POST VISUALS ---
