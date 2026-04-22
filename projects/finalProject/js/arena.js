@@ -57,6 +57,18 @@ function arenaPhysics(world, width, height, onGoalScored) {
     floorBody.position.y = -5; // Shift down to match y=0
     world.addBody(floorBody);
 
+    const ballMaterial = new CANNON.Material('ball');
+    const floorMaterial = new CANNON.Material('floor');
+    
+    // Rocket League is bouncy but has grip
+    const ballFloorContact = new CANNON.ContactMaterial(ballMaterial, floorMaterial, {
+        restitution: 0.9, // High bounciness (0 to 1)
+        friction: 0.2,    // Just enough so it doesn't slide forever
+        contactEquationStiffness: 1e7, // Makes the surface feel "hard"
+        contactEquationRelaxation: 3   // Prevents jitter
+    });
+world.addContactMaterial(ballFloorContact);
+
     // --- LONG SIDE WALLS ---
     const sideWallShape = new CANNON.Box(
         new CANNON.Vec3(

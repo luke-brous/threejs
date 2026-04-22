@@ -44,8 +44,16 @@ export default function ball(scene, world) {
  * @returns 
  */
 export function ballPhysics(world) {
-    const sphereShape = new CANNON.Sphere(2)
-    const sphereBody = new CANNON.Body({ mass: 1 })
+
+    
+    const radius = 2;
+
+
+    const sphereShape = new CANNON.Sphere(radius)
+    const sphereBody = new CANNON.Body({ 
+        mass: 2 
+        
+    })
     sphereBody.addShape(sphereShape)
     sphereBody.position.set(0, 5, 5)
 
@@ -55,7 +63,7 @@ export function ballPhysics(world) {
                 sphereBody.position.set(0,5,0)
                 break;
         }
-    })
+    })  
 
 
     world.addBody(sphereBody)
