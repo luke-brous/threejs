@@ -33,19 +33,19 @@ export default function car(scene, world) {
 function physics(world) {
     // use cannon-es raycastVehicle to build car
     const chassisShape = new CANNON.Box(new CANNON.Vec3(2,0.3,1))
-    const chassisBody = new CANNON.Body({ mass: 150 })
+    const chassisBody = new CANNON.Body({ mass: 100 })
 
     const cabinShape = new CANNON.Box(new CANNON.Vec3(1, 0.25, 0.9));
 
-    const topOffset = new CANNON.Vec3(1, 0.55, -0.005); 
+    const topOffset = new CANNON.Vec3(1, 0.55, 0); 
     chassisBody.addShape(cabinShape, topOffset);
 
     
     chassisBody.addShape(chassisShape)
     chassisBody.position.set(0, 4, -5)
     chassisBody.angularVelocity.set(0, 0, 0)
-    chassisBody.linearDamping = 0.1; 
-    chassisBody.angularDamping = 0.1;
+    // chassisBody.linearDamping = 0.1; 
+    // chassisBody.angularDamping = 0.1;
 
     world.addBody(chassisBody)
 
@@ -60,28 +60,27 @@ function physics(world) {
         chassisConnectionPointLocal: new CANNON.Vec3(-1.5, 0, 1.2), // position of the wheel relative to the chassis
         suspensionStiffness: 100, // how stiff the suspension is
         suspensionRestLength: 0.4 , // how long the suspension is when it's not compressed
-        maxSuspensionForce: 100000, // maximum force the suspension can apply
-        maxSuspensionTravel: 0.8, // maximum distance the suspension can compress
-        dampingRelaxation: 15, // how much the suspension resists compression
-        dampingCompression: 15, // how much the suspension resists extension
+        maxSuspensionForce: 10000, // maximum force the suspension can apply
+        maxSuspensionTravel: 1.0, // maximum distance the suspension can compress
+        dampingRelaxation: 2.3, // how much the suspension resists compression
+        dampingCompression: 4.4, // how much the suspension resists extension
         rollInfluence: 0.01, // how much the vehicle rolls when turning
-        frictionSlip: 5.0 // how much the wheel slips when it loses traction
+        frictionSlip: 15.0 // how much the wheel slips when it loses traction
 
     }
 
     // add the four wheels at the appropriate positions relative to the chassis
-    const connectY = -0.1; 
 
-    wheelParams.chassisConnectionPointLocal.set(-1.4, connectY, 1.0);
+    wheelParams.chassisConnectionPointLocal.set(-1.4, -0.1, 1.0);
     vehicle.addWheel(wheelParams);
 
-    wheelParams.chassisConnectionPointLocal.set(-1.4, connectY, -1.0);
+    wheelParams.chassisConnectionPointLocal.set(-1.4, -0.1, -1.0);
     vehicle.addWheel(wheelParams);
 
-    wheelParams.chassisConnectionPointLocal.set(1.4, connectY, 1.0);
+    wheelParams.chassisConnectionPointLocal.set(1.4, -0.1, 1.0);
     vehicle.addWheel(wheelParams);
 
-    wheelParams.chassisConnectionPointLocal.set(1.4, connectY, -1.0);
+    wheelParams.chassisConnectionPointLocal.set(1.4, -0.1, -1.0);
     vehicle.addWheel(wheelParams);
 
     window.addEventListener('keydown', (event) => {
@@ -90,7 +89,7 @@ function physics(world) {
 
         const maxSteerVal = 0.5
         const maxForce = 500
-        const brakeForce = 10000
+        const brakeForce = 100000
         switch (event.key) {
           case 'w':
           case 'ArrowUp':
@@ -118,7 +117,7 @@ function physics(world) {
             const groundedWheels = vehicle.wheelInfos.filter(w => w.raycastResult.hasHit).length;
 
             if (groundedWheels >= 2) {
-              chassisBody.applyImpulse(new CANNON.Vec3(0, 700, 0), new CANNON.Vec3(0, 0, 0))
+              chassisBody.applyImpulse(new CANNON.Vec3(0, 900, 0), new CANNON.Vec3(0, 0, 0))
             } else {
               console.log(`Jump failed: only ${groundedWheels} wheels on ground`)
             }
