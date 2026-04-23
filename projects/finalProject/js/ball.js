@@ -10,28 +10,35 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+export const BALL_DYNAMICS = {
+    mass: 10,
+    radius: 2,
+    linearDamping: 0.08,
+    angularDamping: 0.12
+};
+
 // uses the GLTFLoader to load a .glb file of a ball, which is a sphere with a texture on it.
 const loader = new GLTFLoader();
 
 /**
  * @function ball, which creates the ball in both the physics world and the rendering world, 
  * and returns an object with both the physics body and the visual mesh, as well as an update function to sync the two together.
- * The ball has a mass of 1, and a radius of 2.
+ * The ball has a mass of 10, and a radius of 2.
  * @param {*} scene 
  * @param {*} world 
  * @returns 
  */
 export default function ball(scene, world) {
-    const myBallPhysics = ballPhysics(world)
-    const myBallMesh = ballVisuals(scene)
-    myBallPhysics.name = 'ball'; 
+    const ballBody = ballPhysics(world)
+    const ballMesh = ballVisuals(scene)
+    ballBody.name = 'ball'; 
 
     return {
-        physics: myBallPhysics,
-        mesh: myBallMesh,
+        physics: ballBody,
+        mesh: ballMesh,
         update: function() {
-            myBallMesh.position.copy(myBallPhysics.position)
-            myBallMesh.quaternion.copy(myBallPhysics.quaternion)
+            ballMesh.position.copy(ballBody.position)
+            ballMesh.quaternion.copy(ballBody.quaternion)
 
         }
     }
@@ -45,16 +52,20 @@ export default function ball(scene, world) {
  */
 export function ballPhysics(world) {
 
-    
-    const radius = 2;
+    const radius = BALL_DYNAMICS.radius;
 
 
     const sphereShape = new CANNON.Sphere(radius)
     const sphereBody = new CANNON.Body({ 
-        mass: 2 
+        mass: BALL_DYNAMICS.mass 
         
     })
     sphereBody.addShape(sphereShape)
+    if (world.ballMaterial) {
+        sphereBody.material = world.ballMaterial;
+    }
+    sphereBody.linearDamping = BALL_DYNAMICS.linearDamping;
+    sphereBody.angularDamping = BALL_DYNAMICS.angularDamping;
     sphereBody.position.set(0, 5, 5)
 
     window.addEventListener('keydown', (event) => {
@@ -78,13 +89,16 @@ export function ballPhysics(world) {
  */
 export function ballVisuals(scene) {
     
-    const ballMesh1 = new THREE.Group()
-    scene.add(ballMesh1)
+    const ballGroup = new THREE.Group()
+    scene.add(ballGroup)
 
-    loadBall(ballMesh1)
+    loadBall(ballGroup)
+
+    ballGroup.castShadow = true;
+    ballGroup.receiveShadow = true;
 
     
-    return ballMesh1;
+    return ballGroup;
 
 }
 
@@ -94,6 +108,13 @@ async function loadBall(group) {
     const ballUrl = new URL('../images/ball.glb', import.meta.url).href;
     const ballData = await loader.loadAsync(ballUrl);
     const ball = ballData.scene;
+
+        ball.traverse((child) => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        });
 
     ballData.scene.scale.set(2.1,2.1,2.1)
 

@@ -1,3 +1,10 @@
+/**
+ * @luke-brous
+ * @abstract This is the arena, the "field" where the car drives and hits the ball into goals.
+ * It integrates Three.js for rendering and Cannon-es for physics simulation, creating a cohesive 3D environment.
+ * Three.js and Cannon-es are both used in this file.
+ */
+
 import * as CANNON from 'cannon-es';
 import * as THREE from 'three';
 
@@ -20,6 +27,34 @@ const ARENA_CONFIG = {
     worldLength: 1000
 };
 
+const PHYSICS_TUNING = {
+    ballArenaContact: {
+        restitution: 0.82,
+        friction: 0.16,
+        contactEquationStiffness: 1e7,
+        contactEquationRelaxation: 3
+    }
+};
+
+const VISUALS_CONFIG = {
+    stands: {
+        edgeOffset: 16,
+        levels: 6,
+        levelHeight: 4.5,
+        sideSpan: ARENA_CONFIG.cageLength * 0.95,
+        endSpan: ARENA_CONFIG.cageWidth * 0.95,
+        baseDepth: 48,
+        spacing: 2.8
+    },
+    crowd: {
+        cols: 34,
+        rows: 8,
+        sideJitter: 0.6,
+        endJitter: 0.6
+    },
+    skyboxSize: 3000
+};
+
 /**
  * @abstract This is the arena which will be the "field" for the car to drive around in.
  * It meshes three.js and cannon-es.js together to create a plane in both the physics world and the rendering world.
@@ -40,34 +75,79 @@ export default function arena(scene, world, width, height, onGoalScored) {
 }
 
 function lights(scene) {
-    const ambLight = new THREE.AmbientLight("white", 2);
+    // ambient light for general lighting
+    const ambLight = new THREE.AmbientLight("white", 0.6);
     scene.add(ambLight);
 
-    const pointLight = new THREE.PointLight("white", 10, 0, 0);
-    pointLight.position.set(0, 30, 0);
-    pointLight.castShadow = true;   
-    scene.add(pointLight);
+    const sunLight = new THREE.DirectionalLight("#fff6df", 2.0);
+    sunLight.position.set(100, 200, 100);
+    sunLight.castShadow = true;
+    
+    sunLight.shadow.camera.left = -200;
+    sunLight.shadow.camera.right = 200;
+    sunLight.shadow.camera.top = 200;
+    sunLight.shadow.camera.bottom = -200;
+    sunLight.shadow.camera.far = 1000;
+    
+    sunLight.shadow.bias = -0.001; 
+    sunLight.shadow.mapSize.set(2048, 2048);
+    scene.add(sunLight);
+
+    const centerTarget = new THREE.Object3D();
+    centerTarget.position.set(0, 0, 0);
+    scene.add(centerTarget);
+    sunLight.target = centerTarget;
+
+    const cornerX = ARENA_CONFIG.cageWidth / 2;
+    const cornerY = ARENA_CONFIG.cageHeight + 20; 
+    const cornerZ = ARENA_CONFIG.cageLength / 2;
+
+    const cornerPositions = [
+        [cornerX, cornerY, cornerZ],
+        [-cornerX, cornerY, cornerZ],
+        [cornerX, cornerY, -cornerZ],
+        [-cornerX, cornerY, -cornerZ]
+    ];
+
+    cornerPositions.forEach(([x, y, z]) => {
+        const light = new THREE.SpotLight("#fff6df", 60000); 
+        light.position.set(x, y, z);
+        light.angle = Math.PI / 4;
+        light.penumbra = 0.5;
+        light.decay = 2;
+        light.distance = 500;
+        light.target = centerTarget;
+
+        light.castShadow = false; 
+
+        scene.add(light);
+    });
 }
 
+/**
+ * @function arenaPhysics, which creates the physics bodies for the arena (floor, walls, goals, ramps) and adds them to the Cannon-es world.
+ * It also sets up collision detection for goal scoring.
+ * @param {CANNON.World} world - The Cannon-es physics world.
+ * @param {number} width - The width of the arena.
+ * @param {number} height - The height of the arena.
+ * @param {function(string): void} onGoalScored - Callback function invoked when a goal is scored, receiving the scoring team as an argument.
+ * @returns {object} An object containing references to the created physics bodies.
+ */
 function arenaPhysics(world, width, height, onGoalScored) {
 
     // --- WORLD FLOOR PHYSICS ---
+    const ballMaterial = new CANNON.Material('ball');
+    const arenaMaterial = new CANNON.Material('arena');
+    world.ballMaterial = ballMaterial;
+
+    const ballArenaContact = new CANNON.ContactMaterial(ballMaterial, arenaMaterial, PHYSICS_TUNING.ballArenaContact);
+    world.addContactMaterial(ballArenaContact);
+
     const floorShape = new CANNON.Box(new CANNON.Vec3(width / 2, 5, height / 2));
     const floorBody = new CANNON.Body({ mass: 0, shape: floorShape });
+    floorBody.material = arenaMaterial;
     floorBody.position.y = -5; // Shift down to match y=0
     world.addBody(floorBody);
-
-    const ballMaterial = new CANNON.Material('ball');
-    const floorMaterial = new CANNON.Material('floor');
-    
-    // Rocket League is bouncy but has grip
-    const ballFloorContact = new CANNON.ContactMaterial(ballMaterial, floorMaterial, {
-        restitution: 0.9, // High bounciness (0 to 1)
-        friction: 0.2,    // Just enough so it doesn't slide forever
-        contactEquationStiffness: 1e7, // Makes the surface feel "hard"
-        contactEquationRelaxation: 3   // Prevents jitter
-    });
-world.addContactMaterial(ballFloorContact);
 
     // --- LONG SIDE WALLS ---
     const sideWallShape = new CANNON.Box(
@@ -79,10 +159,12 @@ world.addContactMaterial(ballFloorContact);
     );
 
     const sidewallBody1 = new CANNON.Body({ mass: 0, shape: sideWallShape });
+    sidewallBody1.material = arenaMaterial;
     sidewallBody1.position.set(ARENA_CONFIG.cageWidth / 2, ARENA_CONFIG.cageHeight / 2, 0);
     world.addBody(sidewallBody1);
 
     const sidewallBody2 = new CANNON.Body({ mass: 0, shape: sideWallShape });
+    sidewallBody2.material = arenaMaterial;
     sidewallBody2.position.set(-ARENA_CONFIG.cageWidth / 2, ARENA_CONFIG.cageHeight / 2, 0);
     world.addBody(sidewallBody2);
 
@@ -97,18 +179,22 @@ world.addContactMaterial(ballFloorContact);
     );
 
     const backWall1 = new CANNON.Body({ mass: 0, shape: backWallShape });
+    backWall1.material = arenaMaterial;
     backWall1.position.set(ARENA_CONFIG.goalWidth / 2 + postWidth / 2, ARENA_CONFIG.cageHeight / 2, ARENA_CONFIG.cageLength / 2);
     world.addBody(backWall1);
 
     const backWall2 = new CANNON.Body({ mass: 0, shape: backWallShape });
+    backWall2.material = arenaMaterial;
     backWall2.position.set(-(ARENA_CONFIG.goalWidth / 2 + postWidth / 2), ARENA_CONFIG.cageHeight / 2, ARENA_CONFIG.cageLength / 2);
     world.addBody(backWall2);
 
     const backWall3 = new CANNON.Body({ mass: 0, shape: backWallShape });
+    backWall3.material = arenaMaterial;
     backWall3.position.set(ARENA_CONFIG.goalWidth / 2 + postWidth / 2, ARENA_CONFIG.cageHeight / 2, -ARENA_CONFIG.cageLength / 2);
     world.addBody(backWall3);
 
     const backWall4 = new CANNON.Body({ mass: 0, shape: backWallShape });
+    backWall4.material = arenaMaterial;
     backWall4.position.set(-(ARENA_CONFIG.goalWidth / 2 + postWidth / 2), ARENA_CONFIG.cageHeight / 2, -ARENA_CONFIG.cageLength / 2);
     world.addBody(backWall4);
 
@@ -125,16 +211,19 @@ world.addContactMaterial(ballFloorContact);
     const topGoalYPos = ARENA_CONFIG.goalHeight + (topGoalHeight / 2);
 
     const topGoalWall1 = new CANNON.Body({ mass: 0, shape: topGoalWallShape });
+    topGoalWall1.material = arenaMaterial;
     topGoalWall1.position.set(0, topGoalYPos, ARENA_CONFIG.cageLength / 2);
     world.addBody(topGoalWall1);
 
     const topGoalWall2 = new CANNON.Body({ mass: 0, shape: topGoalWallShape });
+    topGoalWall2.material = arenaMaterial;
     topGoalWall2.position.set(0, topGoalYPos, -ARENA_CONFIG.cageLength / 2);
     world.addBody(topGoalWall2);
 
     // --- Ceiling ---
     const ceilingShape = new CANNON.Box(new CANNON.Vec3(ARENA_CONFIG.cageWidth / 2, ARENA_CONFIG.wallThickness, ARENA_CONFIG.cageLength / 2));
     const ceilingBody = new CANNON.Body({ mass: 0, shape: ceilingShape });
+    ceilingBody.material = arenaMaterial;
     ceilingBody.position.set(0, ARENA_CONFIG.cageHeight + (ARENA_CONFIG.wallThickness / 2), 0);
     world.addBody(ceilingBody);
 
@@ -165,6 +254,7 @@ world.addContactMaterial(ballFloorContact);
     );
 
     const sideGoalWall1 = new CANNON.Body({ mass: 0, shape: sideGoalShape });
+    sideGoalWall1.material = arenaMaterial;
     sideGoalWall1.position.set(
         ARENA_CONFIG.goalWidth / 2 + ARENA_CONFIG.wallThickness / 2, 
         ARENA_CONFIG.goalHeight / 2, 
@@ -172,6 +262,7 @@ world.addContactMaterial(ballFloorContact);
     world.addBody(sideGoalWall1);
 
     const sideGoalWall2 = new CANNON.Body({ mass: 0, shape: sideGoalShape });
+    sideGoalWall2.material = arenaMaterial;
     sideGoalWall2.position.set(
         -ARENA_CONFIG.goalWidth / 2 - ARENA_CONFIG.wallThickness / 2, 
         ARENA_CONFIG.goalHeight / 2, 
@@ -179,6 +270,7 @@ world.addContactMaterial(ballFloorContact);
     world.addBody(sideGoalWall2);
 
     const sideGoalWall3 = new CANNON.Body({ mass: 0, shape: sideGoalShape });
+    sideGoalWall3.material = arenaMaterial;
     sideGoalWall3.position.set(
         ARENA_CONFIG.goalWidth / 2 + ARENA_CONFIG.wallThickness / 2, 
         ARENA_CONFIG.goalHeight / 2, 
@@ -186,6 +278,7 @@ world.addContactMaterial(ballFloorContact);
     world.addBody(sideGoalWall3);
 
     const sideGoalWall4 = new CANNON.Body({ mass: 0, shape: sideGoalShape });
+    sideGoalWall4.material = arenaMaterial;
     sideGoalWall4.position.set(
         -ARENA_CONFIG.goalWidth / 2 - ARENA_CONFIG.wallThickness / 2, 
         ARENA_CONFIG.goalHeight / 2, 
@@ -193,6 +286,7 @@ world.addContactMaterial(ballFloorContact);
     world.addBody(sideGoalWall4);
 
     const topGoalBody1 = new CANNON.Body({ mass: 0, shape: topGoalShape });
+    topGoalBody1.material = arenaMaterial;
     topGoalBody1.position.set(
         0, 
         ARENA_CONFIG.goalHeight + ARENA_CONFIG.wallThickness / 2, 
@@ -200,6 +294,7 @@ world.addContactMaterial(ballFloorContact);
     world.addBody(topGoalBody1);
 
     const topGoalBody2 = new CANNON.Body({ mass: 0, shape: topGoalShape });
+    topGoalBody2.material = arenaMaterial;
     topGoalBody2.position.set(
         0, 
         ARENA_CONFIG.goalHeight + (ARENA_CONFIG.wallThickness / 2), 
@@ -208,11 +303,13 @@ world.addContactMaterial(ballFloorContact);
 
 
     const backGoalBody1 = new CANNON.Body({ mass: 0, shape: backGoalShape });
+    backGoalBody1.material = arenaMaterial;
     backGoalBody1.position.set(0, ARENA_CONFIG.goalHeight / 2, ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.goalDepth / 2);
     world.addBody(backGoalBody1);
 
 
     const backGoalBody2 = new CANNON.Body({ mass: 0, shape: backGoalShape });
+    backGoalBody2.material = arenaMaterial;
     backGoalBody2.position.set(0, ARENA_CONFIG.goalHeight / 2, -ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.goalDepth / 2);
     world.addBody(backGoalBody2);
 
@@ -231,7 +328,7 @@ world.addContactMaterial(ballFloorContact);
 
     const goalSensorBody2 = new CANNON.Body({ mass: 0, shape: goalSensorShape, type: CANNON.Body.KINEMATIC });
     goalSensorBody2.position.set(0, ARENA_CONFIG.goalHeight / 2, -ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.goalDepth / 4);
-    goalSensorBody2.collisionResponse = false;
+    goalSensorBody2.collisionResponse = false; // Blocks collision and triggers event only
     world.addBody(goalSensorBody2);
 
     const goalSensors = [goalSensorBody1, goalSensorBody2];
@@ -267,9 +364,18 @@ world.addContactMaterial(ballFloorContact);
     };
 }
 
+/**
+ * @function arenaVisual, which creates the visual meshes for the arena (floor, walls, goals, ramps, skybox, stands, crowd) and adds them to the Three.js scene.
+ * @param {THREE.Scene} scene - The Three.js scene.
+ * @param {number} width - The width of the arena.
+ * @param {number} height - The height of the arena.
+ * @returns {THREE.Group} A Three.js group containing all the visual components of the arena.
+ */
 function arenaVisual(scene, width, height) {
     const arenaGroup = new THREE.Group();
+    const skybox = createSkybox();
     const wallMat = new THREE.MeshPhongMaterial({ color: "#444", side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+    scene.add(skybox);
 
     // --- WORLD FLOOR VISUAL ---
     const planeGeo = new THREE.PlaneGeometry(width, height, 16, 16);
@@ -278,6 +384,7 @@ function arenaVisual(scene, width, height) {
         new THREE.MeshPhongMaterial({ color: "green", side: THREE.DoubleSide })
     );
     planeMesh.rotation.x = -Math.PI / 2;
+    planeMesh.receiveShadow = true;
     arenaGroup.add(planeMesh);
 
     // --- SIDE WALL VISUALS ---
@@ -621,8 +728,98 @@ function arenaVisual(scene, width, height) {
     netBack2.position.set(0, ARENA_CONFIG.goalHeight / 2, negZ - ARENA_CONFIG.goalDepth / 2);
     arenaGroup.add(netBack2);
 
+    addStandsAndCrowd(arenaGroup);
+
     scene.add(arenaGroup);
 
     return arenaGroup;
 }
 
+function createSkybox() {
+    const size = VISUALS_CONFIG.skyboxSize;
+    const skyGeo = new THREE.BoxGeometry(size, size, size);
+    const skyMats = [
+        new THREE.MeshBasicMaterial({ color: "#7fb2ff", side: THREE.BackSide }),
+        new THREE.MeshBasicMaterial({ color: "#7fb2ff", side: THREE.BackSide }),
+        new THREE.MeshBasicMaterial({ color: "#9fd2ff", side: THREE.BackSide }),
+        new THREE.MeshBasicMaterial({ color: "#4f74c7", side: THREE.BackSide }),
+        new THREE.MeshBasicMaterial({ color: "#6f97ec", side: THREE.BackSide }),
+        new THREE.MeshBasicMaterial({ color: "#6f97ec", side: THREE.BackSide })
+    ];
+    const skybox = new THREE.Mesh(skyGeo, skyMats);
+    skybox.name = 'skybox';
+    return skybox;
+}
+function addStandsAndCrowd(scene) {
+    const eggColors = [
+        "#fff5d1", "#ffd7a8", "#f2f2f2",
+        "#ff6b6b", "#4ecdc4", "#45b7d1",
+        "#96ceb4", "#ffeead", "#d4a5a5"
+    ];
+
+    const distanceBuffer = 25; 
+    const offsetW = ARENA_CONFIG.cageWidth / 2 + distanceBuffer;
+    const offsetL = ARENA_CONFIG.cageLength / 2 + distanceBuffer;
+
+    const standConfigs = [
+        { x:  offsetW, z: 0, rot: -Math.PI / 2, length: ARENA_CONFIG.cageLength + 40 }, 
+        { x: -offsetW, z: 0, rot:  Math.PI / 2, length: ARENA_CONFIG.cageLength + 40 }, 
+        { x: 0, z:  offsetL, rot:  Math.PI,      length: ARENA_CONFIG.cageWidth + 40 },       
+        { x: 0, z: -offsetL, rot:  0,            length: ARENA_CONFIG.cageWidth + 40 }            
+    ];
+
+    standConfigs.forEach(config => {
+        const standGroup = createStands(config.length, "#4a4e59", eggColors);
+        standGroup.position.set(config.x, 0, config.z);
+        standGroup.rotation.y = config.rot;
+        scene.add(standGroup);
+    });
+}
+
+function createStands(width, standColor, eggColors) {
+    const standGroup = new THREE.Group();
+
+    const levels = 10;
+    const stepDepth = 5;
+    const stepHeight = 3.0;
+
+    for (let i = 0; i < levels; i++) {
+        const boxGeo = new THREE.BoxGeometry(width, stepHeight, stepDepth);
+        const boxMat = new THREE.MeshPhongMaterial({ color: standColor });
+        const step = new THREE.Mesh(boxGeo, boxMat);
+
+        step.position.y = (i + 0.5) * stepHeight;
+        step.position.z = -i * stepDepth;
+        step.castShadow = true;
+        step.receiveShadow = true;
+        standGroup.add(step);
+
+
+        const eggSpacing = 7;
+        const eggCount = Math.floor(width / eggSpacing); 
+
+        for (let j = 0; j < eggCount - 2; j++) {
+            const randomColor = eggColors[Math.floor(Math.random() * eggColors.length)];
+            const egg = createBasicEgg(randomColor);
+            
+            egg.position.x = (j * eggSpacing) - (width / 2) + 10;
+            egg.position.y = step.position.y + (stepHeight / 2) + 1.5;
+            egg.position.z = step.position.z;
+            
+            egg.rotation.y = (Math.random() - 0.5) * 0.5;
+            
+            standGroup.add(egg);
+        }
+    }
+    return standGroup;
+}
+
+function createBasicEgg(color) {
+    const geo = new THREE.SphereGeometry(0.8, 16, 16);
+    const mat = new THREE.MeshPhongMaterial({ color: color });
+    const egg = new THREE.Mesh(geo, mat);
+    
+    egg.scale.set(2, 2.5, 2); 
+    egg.castShadow = true;
+    return egg;
+}

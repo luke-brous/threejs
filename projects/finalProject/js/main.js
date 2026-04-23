@@ -1,7 +1,7 @@
 /**
  * ISSUES TO WORK ON:
  * - Add shadows to the scene (cast and receive)
- * - Fix jump logic so that the car only jumps when it is grounded
+ * - Fix jump logic so that the car only jumps when it is grounded -- done
  * - Create the actual arena (goals ceiling walls) -- done
  * - Need to fix the ramps so the physics work
  * - Add stands and decerations outside of arena
@@ -20,6 +20,7 @@ import car from './car.js'
 import arena from './arena.js'
 import ball from './ball.js'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { updateCamera } from './camera.js';
 
 console.log(`Loaded Three.js version ${THREE.REVISION}`);
 
@@ -34,7 +35,8 @@ let controls;
 let cannonDebugger;
 let arenaInstance;
 let carInstance;
-let ballInstance
+let ballInstance;
+let isBallCam = false; // Start in Car Cam mode
 
 // Load world
 threeInit()
@@ -68,6 +70,13 @@ function threeInit() {
     window.addEventListener('keydown', (event) => {
         if (event.key === 'x' || event.key === 'X') {
             axesHelper.visible = !axesHelper.visible;
+        }
+    });
+
+    window.addEventListener('keydown', (event) => {
+    if (event.key.toLowerCase() === 'f') {
+        isBallCam = !isBallCam;
+        console.log(`Camera Mode: ${isBallCam ? 'Ball Cam' : 'Car Cam'}`);
         }
     });
 
@@ -108,6 +117,8 @@ function cannonInit() {
     console.log("Initializing Cannon.js");
 
     world = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.82, 0) })
+    // world.solver.iterations = 12;
+    // world.solver.tolerance = 0.001;
 
 
 }
@@ -119,11 +130,14 @@ function animate() {
     requestAnimationFrame(animate);
     
     controls.update();
+    const deltaTime = 1/60; // Fixed time step for physics
     
     world.fixedStep();
     cannonDebugger.update() // Update the CannonDebugger meshes
     carInstance.update()
     ballInstance.update()
+
+    updateCamera(camera, carInstance.mesh.chassisMesh, ballInstance.mesh.mesh, isBallCam);
 
     renderer.render(scene, camera);
 }

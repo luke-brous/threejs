@@ -1,3 +1,9 @@
+/**
+ * @luke-brous
+ * @abstract This is the drivable car, modeled after the "Fennec" from Rocket League. It integrates Three.js for rendering and Cannon-es for physics simulation,
+ * allowing for a physics-driven driving experience. Three.js, Cannon-es, and GLTFLoader are all used in this file.
+ */
+
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -30,10 +36,16 @@ export default function car(scene, world) {
     } 
 }
 
+/**
+ * @function physics, which creates the Cannon-es RaycastVehicle for the car, including its chassis and wheels, and adds it to the physics world.
+ * It also sets up event listeners for car controls (WASD, Space, B).
+ * @param {CANNON.World} world - The Cannon-es physics world.
+ * @returns {CANNON.RaycastVehicle} The configured Cannon-es RaycastVehicle.
+ */
 function physics(world) {
     // use cannon-es raycastVehicle to build car
     const chassisShape = new CANNON.Box(new CANNON.Vec3(2,0.3,1))
-    const chassisBody = new CANNON.Body({ mass: 100 })
+    const chassisBody = new CANNON.Body({ mass: 150 })
 
     const cabinShape = new CANNON.Box(new CANNON.Vec3(1, 0.25, 0.9));
 
@@ -58,14 +70,14 @@ function physics(world) {
         directionLocal: new CANNON.Vec3(0, -1, 0), // direction of suspension
         axleLocal: new CANNON.Vec3(0, 0, 1), // point where the wheel is attached to the chassis, relative to the center of mass
         chassisConnectionPointLocal: new CANNON.Vec3(-1.5, 0, 1.2), // position of the wheel relative to the chassis
-        suspensionStiffness: 100, // how stiff the suspension is
+        suspensionStiffness: 150, // how stiff the suspension is
         suspensionRestLength: 0.4 , // how long the suspension is when it's not compressed
         maxSuspensionForce: 10000, // maximum force the suspension can apply
         maxSuspensionTravel: 1.0, // maximum distance the suspension can compress
-        dampingRelaxation: 2.3, // how much the suspension resists compression
-        dampingCompression: 4.4, // how much the suspension resists extension
+        dampingRelaxation: 8, // how much the suspension resists compression
+        dampingCompression: 10, // how much the suspension resists extension
         rollInfluence: 0.01, // how much the vehicle rolls when turning
-        frictionSlip: 15.0 // how much the wheel slips when it loses traction
+        frictionSlip: 18.0 // how much the wheel slips when it loses traction
 
     }
 
@@ -87,8 +99,8 @@ function physics(world) {
         // event.preventDefault()
         if (event.repeat) return;
 
-        const maxSteerVal = 0.5
-        const maxForce = 500
+        const maxSteerVal = 0.7
+        const maxForce = 600
         const brakeForce = 100000
         switch (event.key) {
           case 'w':
@@ -112,15 +124,25 @@ function physics(world) {
             vehicle.setSteeringValue(-maxSteerVal, 1)
             break
           case ' ':
-            // WheelInfo contact flags can be stale; raycast below each wheel anchor
-            // to determine whether the vehicle is actually grounded.
+            // WheelInfo contact can lag for one frame, so the raycast hit check is more reliable for jump gating.
             const groundedWheels = vehicle.wheelInfos.filter(w => w.raycastResult.hasHit).length;
 
             if (groundedWheels >= 2) {
-              chassisBody.applyImpulse(new CANNON.Vec3(0, 900, 0), new CANNON.Vec3(0, 0, 0))
+              chassisBody.applyImpulse(new CANNON.Vec3(0, 1100, 0), new CANNON.Vec3(0, 0, 0))
             } else {
               console.log(`Jump failed: only ${groundedWheels} wheels on ground`)
             }
+            break;
+          case 't':
+            // Quick recovery: pop the car upward and flatten pitch/roll while keeping yaw.
+            const hopForce = 800; 
+            chassisBody.applyImpulse(new CANNON.Vec3(0, hopForce, 0), new CANNON.Vec3(0, 0, 0));
+
+            const euler = new CANNON.Vec3();
+            chassisBody.quaternion.toEuler(euler);
+            
+            chassisBody.quaternion.setFromEuler(0, euler.y, 0);
+            chassisBody.angularVelocity.set(0, 0, 0);
             break;
           case 'b':
             vehicle.setBrake(brakeForce, 0)
@@ -169,6 +191,11 @@ function physics(world) {
     return vehicle;
 }
 
+/**
+ * @function visual, which creates the visual meshes for the car, including loading the Fennec GLB model and creating placeholder wheel meshes, and adds them to the Three.js scene.
+ * @param {THREE.Scene} scene - The Three.js scene.
+ * @returns {object} An object containing the chassis mesh and an array of wheel meshes.
+ */
 function visual(scene) {
   
   const chassisMesh = new THREE.Group();
@@ -193,6 +220,8 @@ function visual(scene) {
   meshesArray = []
   wheelPositions.forEach(pos => {
     const wheelMesh = new THREE.Mesh(wheelGeo, wheelMat)
+    wheelMesh.castShadow = true
+    wheelMesh.receiveShadow = true
     meshesArray.push(wheelMesh)
     wheelMesh.position.set(...pos)
     scene.add(wheelMesh)
@@ -223,6 +252,8 @@ async function loadFennec(group, scene) {
     // traverse the fennec model and extract the wheel meshes based on their names.
     fennec.traverse((child) => {
         if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
             if (child.name.includes("FL") || 
                 child.name.includes("FR") || 
                 child.name.includes("BL") || 
@@ -266,6 +297,14 @@ async function loadFennec(group, scene) {
     
     // After the loop finishes sorting the pieces, add the groups to scene and array
     scene.add(wheelFL, wheelFR, wheelBL, wheelBR);
+    [wheelFL, wheelFR, wheelBL, wheelBR].forEach((wheelGroup) => {
+      wheelGroup.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+    });
     meshesArray[0] = wheelBL; // back left
     meshesArray[1] = wheelBR; // back right
     meshesArray[2] = wheelFL; // front left
