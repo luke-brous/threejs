@@ -11,10 +11,10 @@ import * as CANNON from 'cannon-es';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 export const BALL_DYNAMICS = {
-    mass: 10,
+    mass: 15,
     radius: 2,
-    linearDamping: 0.08,
-    angularDamping: 0.12
+    linearDamping: 0.03,
+    angularDamping: 0.05
 };
 
 // uses the GLTFLoader to load a .glb file of a ball, which is a sphere with a texture on it.
@@ -23,7 +23,7 @@ const loader = new GLTFLoader();
 /**
  * @function ball, which creates the ball in both the physics world and the rendering world, 
  * and returns an object with both the physics body and the visual mesh, as well as an update function to sync the two together.
- * The ball has a mass of 10, and a radius of 2.
+ * The ball has a mass of 15, and a radius of 2.
  * @param {*} scene 
  * @param {*} world 
  * @returns 
@@ -37,6 +37,7 @@ export default function ball(scene, world) {
         physics: ballBody,
         mesh: ballMesh,
         update: function() {
+            // Sync the position and rotation of the visual mesh with the physics body
             ballMesh.position.copy(ballBody.position)
             ballMesh.quaternion.copy(ballBody.quaternion)
 

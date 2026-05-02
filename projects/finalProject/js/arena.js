@@ -9,13 +9,11 @@ import * as CANNON from 'cannon-es';
 import * as THREE from 'three';
 
 const ARENA_CONFIG = {
-    // Ratios are tuned to match rocket league
+    // Ratios are tuned to try to match rocket league
     cageWidth: 227,   
     cageLength: 284,  
     cageHeight: 56,   
     wallThickness: 2, 
-
-    rampRadius: 10,
 
     //  Goal Dimensions
     goalWidth: 50,
@@ -27,7 +25,7 @@ const ARENA_CONFIG = {
     worldLength: 1000
 };
 
-const PHYSICS_TUNING = {
+const PHYSICS_CONFIG = {
     ballArenaContact: {
         restitution: 0.82,
         friction: 0.16,
@@ -49,8 +47,6 @@ const VISUALS_CONFIG = {
     crowd: {
         cols: 34,
         rows: 8,
-        sideJitter: 0.6,
-        endJitter: 0.6
     },
     skyboxSize: 3000
 };
@@ -74,6 +70,11 @@ export default function arena(scene, world, width, height, onGoalScored) {
     };
 }
 
+/**
+ * @abstract This function sets up the lighting for the arena, including ambient light and directional sunlight,
+ *  as well as spotlights at the corners for a stadium effect.
+ * @param {*} scene 
+ */
 function lights(scene) {
     // ambient light for general lighting
     const ambLight = new THREE.AmbientLight("white", 0.6);
@@ -98,6 +99,7 @@ function lights(scene) {
     scene.add(centerTarget);
     sunLight.target = centerTarget;
 
+    // Adding floodlights for the field
     const cornerX = ARENA_CONFIG.cageWidth / 2;
     const cornerY = ARENA_CONFIG.cageHeight + 20; 
     const cornerZ = ARENA_CONFIG.cageLength / 2;
@@ -135,12 +137,14 @@ function lights(scene) {
  */
 function arenaPhysics(world, width, height, onGoalScored) {
 
+    
+
     // --- WORLD FLOOR PHYSICS ---
     const ballMaterial = new CANNON.Material('ball');
     const arenaMaterial = new CANNON.Material('arena');
     world.ballMaterial = ballMaterial;
 
-    const ballArenaContact = new CANNON.ContactMaterial(ballMaterial, arenaMaterial, PHYSICS_TUNING.ballArenaContact);
+    const ballArenaContact = new CANNON.ContactMaterial(ballMaterial, arenaMaterial, PHYSICS_CONFIG.ballArenaContact);
     world.addContactMaterial(ballArenaContact);
 
     const floorShape = new CANNON.Box(new CANNON.Vec3(width / 2, 5, height / 2));
@@ -167,6 +171,8 @@ function arenaPhysics(world, width, height, onGoalScored) {
     sidewallBody2.material = arenaMaterial;
     sidewallBody2.position.set(-ARENA_CONFIG.cageWidth / 2, ARENA_CONFIG.cageHeight / 2, 0);
     world.addBody(sidewallBody2);
+
+   
 
     // --- GOAL WALL SIDE POSTS ---
     const postWidth = (ARENA_CONFIG.cageWidth - ARENA_CONFIG.goalWidth) / 2;
@@ -331,8 +337,6 @@ function arenaPhysics(world, width, height, onGoalScored) {
     goalSensorBody2.collisionResponse = false; // Blocks collision and triggers event only
     world.addBody(goalSensorBody2);
 
-    const goalSensors = [goalSensorBody1, goalSensorBody2];
-
     // Event listeners for goal scoring for both teams
     goalSensorBody2.addEventListener('collide', (event) => {
         if (event.body.name === 'ball') { 
@@ -402,130 +406,6 @@ function arenaVisual(scene, width, height) {
     sideWall2.position.set(-ARENA_CONFIG.cageWidth / 2, ARENA_CONFIG.cageHeight / 2, 0);
     arenaGroup.add(sideWall2);
 
-    // --- SIDE RAMP VISUALS ---
-    const rampMat = new THREE.MeshPhongMaterial({ color: "#444", side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
-
-    // Right Wall Ramp (+X direction)
-    const rightRampGeo = new THREE.CylinderGeometry(
-        ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.cageLength, 
-        16, 1, true, 
-        0, Math.PI / 2 // Theta sweeps from the floor to the wall
-    );
-    const rightRamp = new THREE.Mesh(rightRampGeo, rampMat);
-    rightRamp.rotation.x = Math.PI / 2;
-    rightRamp.position.set(
-        ARENA_CONFIG.cageWidth / 2 - ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.rampRadius, 
-        0
-    );
-    arenaGroup.add(rightRamp);
-
-    const topRightRampGeo = new THREE.CylinderGeometry(
-        ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.cageLength, 
-        16, 1, true, 
-        Math.PI / 2, Math.PI / 2 // sweeps from Right Wall to Ceiling
-    );
-    const topRightRamp = new THREE.Mesh(topRightRampGeo, rampMat);
-    topRightRamp.rotation.x = Math.PI / 2;
-    topRightRamp.position.set(
-        ARENA_CONFIG.cageWidth / 2 - ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.cageHeight - ARENA_CONFIG.rampRadius, 
-        0
-    );
-    arenaGroup.add(topRightRamp);
-
-    // Left Wall Ramp (+X direction)
-    const leftRampGeo = new THREE.CylinderGeometry(
-        ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.cageLength, 
-        16, 1, true, 
-        Math.PI * 1.5, Math.PI / 2 // sweeps from floor to left wall
-    );
-    const leftRamp = new THREE.Mesh(leftRampGeo, rampMat);
-    leftRamp.rotation.x = Math.PI / 2;
-    leftRamp.position.set(
-        -ARENA_CONFIG.cageWidth / 2 + ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.rampRadius, 
-        0
-    );
-    arenaGroup.add(leftRamp);
-
-    const topLeftRampGeo = new THREE.CylinderGeometry(
-        ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.cageLength, 
-        16, 1, true, 
-        -Math.PI / 2, -Math.PI / 2 // Sweeps from Right Wall to Ceiling
-    );
-
-    const topLeftRamp = new THREE.Mesh(topLeftRampGeo, rampMat);
-    topLeftRamp.rotation.x = Math.PI / 2;
-    topLeftRamp.position.set(
-        -ARENA_CONFIG.cageWidth / 2 + ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.cageHeight - ARENA_CONFIG.rampRadius, 
-        0
-    );
-    arenaGroup.add(topLeftRamp);
-
-    // --- CORNER RAMP VISUALS (Vertical Cylinders) ---
-    const cornerRampGeo = new THREE.CylinderGeometry(
-        ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.cageHeight, 
-        16, 1, true, 
-        0, Math.PI / 2 // Sweeps 90 degrees
-    );
-    
-    // Front-Right Corner Ramp (+X, +Z)
-    const frCornerRamp = new THREE.Mesh(cornerRampGeo, rampMat);
-    frCornerRamp.rotation.y = 0; // Sweeps from Right Wall (+X) to Front Wall (+Z)
-    frCornerRamp.position.set(
-        ARENA_CONFIG.cageWidth / 2 - ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.cageHeight / 2, 
-        ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.rampRadius
-    );
-    frCornerRamp.frustumCulled = false; // Prevents disappearing when close
-    arenaGroup.add(frCornerRamp);
-    
-    // Front-Left Corner Ramp (-X, +Z)
-    const flCornerRamp = new THREE.Mesh(cornerRampGeo, rampMat);
-    flCornerRamp.rotation.y = Math.PI / 2; // Sweeps from Front Wall (+Z) to Left Wall (-X)
-    flCornerRamp.position.set(
-        -ARENA_CONFIG.cageWidth / 2 + ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.cageHeight / 2, 
-        ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.rampRadius
-    );
-    flCornerRamp.frustumCulled = false;
-    arenaGroup.add(flCornerRamp);
-    
-    // Back-Left Corner Ramp (-X, -Z)
-    const blCornerRamp = new THREE.Mesh(cornerRampGeo, rampMat);
-    blCornerRamp.rotation.y = Math.PI; // Sweeps from Left Wall (-X) to Back Wall (-Z)
-    blCornerRamp.position.set(
-        -ARENA_CONFIG.cageWidth / 2 + ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.cageHeight / 2, 
-        -ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.rampRadius
-    );
-    blCornerRamp.frustumCulled = false;
-    arenaGroup.add(blCornerRamp);
-    
-    // Back-Right Corner Ramp (+X, -Z)
-    const brCornerRamp = new THREE.Mesh(cornerRampGeo, rampMat);
-    brCornerRamp.rotation.y = Math.PI * 1.5; // Sweeps from Back Wall (-Z) to Right Wall (+X)
-    brCornerRamp.position.set(
-        ARENA_CONFIG.cageWidth / 2 - ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.cageHeight / 2, 
-        -ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.rampRadius
-    );
-    brCornerRamp.frustumCulled = false;
-    arenaGroup.add(brCornerRamp);
-
-
     // --- GOAL POST VISUALS ---
     const postWidth = (ARENA_CONFIG.cageWidth - ARENA_CONFIG.goalWidth) / 2;
     const postGeo = new THREE.BoxGeometry(
@@ -549,96 +429,6 @@ function arenaVisual(scene, width, height) {
     const post4 = new THREE.Mesh(postGeo, wallMat);
     post4.position.set(-(ARENA_CONFIG.goalWidth / 2 + postWidth / 2), ARENA_CONFIG.cageHeight / 2, -ARENA_CONFIG.cageLength / 2);
     arenaGroup.add(post4);
-
-    // --- Back Wall visuals ---
-    
-    const backWallRampGeo = new THREE.CylinderGeometry(
-        ARENA_CONFIG.rampRadius, ARENA_CONFIG.rampRadius, postWidth, 
-        16, 1, true, 
-        0, Math.PI / 2 
-    );
-
-    const frontWallRampGeo = new THREE.CylinderGeometry(
-        ARENA_CONFIG.rampRadius, ARENA_CONFIG.rampRadius, postWidth, 
-        16, 1, true, 
-        Math.PI / 2, Math.PI / 2 
-    );
-
-    // Right side of Positive z Wall
-    const goalRamp1 = new THREE.Mesh(backWallRampGeo, rampMat);
-    goalRamp1.rotation.z = -Math.PI / 2; // Lay it flat
-    goalRamp1.position.set(
-        ARENA_CONFIG.goalWidth / 2 + postWidth / 2, 
-        ARENA_CONFIG.rampRadius,                    
-        ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.rampRadius 
-    );
-    arenaGroup.add(goalRamp1);
-
-    // Left side of Positive z Wall
-    const goalRamp2 = new THREE.Mesh(backWallRampGeo, rampMat);
-    goalRamp2.rotation.z = -Math.PI / 2;
-    goalRamp2.position.set(
-        -(ARENA_CONFIG.goalWidth / 2 + postWidth / 2), 
-        ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.rampRadius
-    );
-    arenaGroup.add(goalRamp2);
-
-    // Right side of Negative z Wall
-    const goalRamp3 = new THREE.Mesh(frontWallRampGeo, rampMat);
-    goalRamp3.rotation.z = -Math.PI / 2;
-    goalRamp3.position.set(
-        ARENA_CONFIG.goalWidth / 2 + postWidth / 2, 
-        ARENA_CONFIG.rampRadius, 
-        -ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.rampRadius
-    );
-    arenaGroup.add(goalRamp3);
-
-    // Left side of Negative z Wall
-    const goalRamp4 = new THREE.Mesh(frontWallRampGeo, rampMat);
-    goalRamp4.rotation.z = -Math.PI / 2;
-    goalRamp4.position.set(
-        -(ARENA_CONFIG.goalWidth / 2 + postWidth / 2), 
-        ARENA_CONFIG.rampRadius, 
-        -ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.rampRadius
-    );
-    arenaGroup.add(goalRamp4);
-
-    const topGoalWallRampGeo1 = new THREE.CylinderGeometry(
-        ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.rampRadius,
-        ARENA_CONFIG.cageWidth,
-        16, 1, true,
-        0, Math.PI / 2 
-    );
-
-    const topGoalWallRamp1 = new THREE.Mesh(topGoalWallRampGeo1, rampMat);
-    topGoalWallRamp1.rotation.z = Math.PI / 2;
-    topGoalWallRamp1.position.set(
-        0, 
-        ARENA_CONFIG.cageHeight - ARENA_CONFIG.rampRadius,
-        ARENA_CONFIG.cageLength / 2 - ARENA_CONFIG.rampRadius 
-
-    );
-    arenaGroup.add(topGoalWallRamp1);
-
-    const topGoalWallRampGeo2 = new THREE.CylinderGeometry(
-        ARENA_CONFIG.rampRadius, 
-        ARENA_CONFIG.rampRadius,
-        ARENA_CONFIG.cageWidth,
-        16, 1, true,
-        Math.PI / 2, Math.PI / 2 
-    );
-
-    const topGoalWallRamp2 = new THREE.Mesh(topGoalWallRampGeo2, rampMat);
-    topGoalWallRamp2.rotation.z = Math.PI / 2;
-    topGoalWallRamp2.position.set(
-        0, 
-        ARENA_CONFIG.cageHeight - ARENA_CONFIG.rampRadius,
-        -ARENA_CONFIG.cageLength / 2 + ARENA_CONFIG.rampRadius
-    );
-    arenaGroup.add(topGoalWallRamp2);
-
 
     // --- crossbar visuals (piece right above the goal) ---
     const topGoalHeight = ARENA_CONFIG.cageHeight - ARENA_CONFIG.goalHeight;
@@ -735,6 +525,9 @@ function arenaVisual(scene, width, height) {
     return arenaGroup;
 }
 
+/**\
+ * @function createSkybox, which creates a simple skybox for the arena using a large cube with different colors on each face to simulate a sky.
+ */
 function createSkybox() {
     const size = VISUALS_CONFIG.skyboxSize;
     const skyGeo = new THREE.BoxGeometry(size, size, size);
@@ -750,6 +543,12 @@ function createSkybox() {
     skybox.name = 'skybox';
     return skybox;
 }
+
+/**
+ * @function addStandsAndCrowd, which creates simple stands around the arena using box geometries and 
+ * populates them with randomly colored eggs to represent the crowd (just like rocket league!).
+ * @param {*} scene 
+ */
 function addStandsAndCrowd(scene) {
     const eggColors = [
         "#fff5d1", "#ffd7a8", "#f2f2f2",
@@ -776,6 +575,13 @@ function addStandsAndCrowd(scene) {
     });
 }
 
+/**
+ * @function createStands, which creates a single stand with multiple levels and populates it with randomly colored eggs to represent the crowd.
+ * @param {*} width 
+ * @param {*} standColor 
+ * @param {*} eggColors 
+ * @returns 
+ */
 function createStands(width, standColor, eggColors) {
     const standGroup = new THREE.Group();
 
@@ -814,6 +620,10 @@ function createStands(width, standColor, eggColors) {
     return standGroup;
 }
 
+/**
+ * @function createBasicEgg, which creates a simple egg-shaped mesh using a scaled sphere geometry and a given color.
+ * @param {string} color - The color of the egg.
+ */
 function createBasicEgg(color) {
     const geo = new THREE.SphereGeometry(0.8, 16, 16);
     const mat = new THREE.MeshPhongMaterial({ color: color });

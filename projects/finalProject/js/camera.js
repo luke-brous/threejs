@@ -1,46 +1,49 @@
-import * as THREE from 'three';
 /**
  * @luke-brous
- * @abstract This file manages the gameplay camera behavior. The camera can follow the car or lock onto the ball,
- * and it uses lerp smoothing so camera movement feels stable during quick physics changes.
- * Three.js is used in this file.
+ * @abstract This is the unified camera system. It keeps the camera anchored behind the 
+ * car's spoiler regardless of the mode, but smoothly pivots the "eyes" of the camera 
+ * between the ball and the car's hood.
  */
 
-// Reuse vectors each frame to avoid creating temporary objects.
+import * as THREE from 'three';
+
 const idealPosition = new THREE.Vector3();
-const cameraTarget = new THREE.Vector3();
+const lookAtTarget = new THREE.Vector3();
 const relativeOffset = new THREE.Vector3();
 
 /**
- * @function updateCamera, which updates the camera position and aim each frame.
- * It follows the car from behind by default, and can switch to looking at the ball.
- * @param {THREE.Camera} camera
- * @param {THREE.Mesh} chassisMesh
- * @param {THREE.Mesh} ballMesh
- * @param {boolean} isBallCam
- * @returns {void}
+ * @function updateCarCamera
+ * Calculates one anchor point behind the car and lerps the rotation target 
+ * based on the isBallCam toggle.
  */
-export function updateCamera(camera, chassisMesh, ballMesh, isBallCam) {
-    const distance = 12;
-    const height = 4;
-    const lookAtOffset = 2;
-    const lerpFactor = 0.1;
+export function updateCarCamera(camera, chassisMesh, ballMesh, isBallCam) {
+    const distance = 14;   // Distance behind the car
+    const height = 5;     // Height above the car
+    const posLerp = 0.1;  // Smoothness of movement
+    const rotLerp = 0.15; // Smoothness of the "look" (higher = snappier)
 
-    // The car model points forward on local +X, so local +X is the rear follow side.
-    relativeOffset.set(distance, height, 0);
-
+    // Calculate the ideal camera position based on the car's orientation
+    relativeOffset.set(distance, height, 0); 
+    
     idealPosition.copy(relativeOffset)
         .applyQuaternion(chassisMesh.quaternion)
         .add(chassisMesh.position);
 
-    camera.position.lerp(idealPosition, lerpFactor);
+    // Key feature
+    // the lerp method is used to smoothly transition the camera's position and
+    //  lookAt target between the car and the ball    
+    camera.position.lerp(idealPosition, posLerp);
+
 
     if (isBallCam && ballMesh) {
-        camera.lookAt(ballMesh.position);
+        // Aim the lens at the ball for ball cam
+        lookAtTarget.lerp(ballMesh.position, rotLerp);
     } else {
-        // Keeps the car centered in the frame with a slight upward tilt
-        cameraTarget.copy(chassisMesh.position);
-        cameraTarget.y += lookAtOffset;
-        camera.lookAt(cameraTarget);
+        // Aim the lens slightly in front of the car for car cam
+        const carFront = new THREE.Vector3().copy(chassisMesh.position);
+        carFront.y += 1.5; // Give a little shift upwards to prevent the camera from aiming at the car's hood
+        lookAtTarget.lerp(carFront, rotLerp);
     }
+
+    camera.lookAt(lookAtTarget);
 }

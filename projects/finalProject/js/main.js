@@ -1,5 +1,9 @@
 /**
- * ISSUES TO WORK ON:
+ * @author Luke Broussard
+ * @abstract A Rocket League mini version built with Three.js and Cannon-es.js. 
+ * 
+ * 
+ * ISSUES TO WORK ON 04/25:
  * - Add shadows to the scene (cast and receive)
  * - Fix jump logic so that the car only jumps when it is grounded -- done
  * - Create the actual arena (goals ceiling walls) -- done
@@ -20,7 +24,7 @@ import car from './car.js'
 import arena from './arena.js'
 import ball from './ball.js'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { updateCamera } from './camera.js';
+import { updateCarCamera } from './camera.js';
 
 console.log(`Loaded Three.js version ${THREE.REVISION}`);
 
@@ -37,6 +41,16 @@ let arenaInstance;
 let carInstance;
 let ballInstance;
 let isBallCam = false; // Start in Car Cam mode
+let isOrbitMode = false; // Orbit camera mode
+
+// common RL spawns
+const KICKOFF_SPAWNS = [
+    { x: 0, z: 75 },
+    { x: -10, z: 78 },
+    { x: 10, z: 78 },
+    { x: -30, z: 40 },
+    { x: 30, z: 40 },
+];
 
 // Load world
 threeInit()
@@ -46,6 +60,8 @@ arenaInstance = arena(scene, world, 1000, 1000, onGoalScored);
 carInstance = car(scene,world)
 ballInstance = ball(scene,world)
 cannonDebugger = new CannonDebugger(scene, world, {})
+
+resetCarToRandomKickoff();
 
 animate()
 
@@ -66,19 +82,29 @@ function threeInit() {
     axesHelper.visible = false; 
     scene.add(axesHelper);
 
-    // Listen for the "a" key to toggle visibility
+    // Listen for the x key to toggle visibility of axes
     window.addEventListener('keydown', (event) => {
         if (event.key === 'x' || event.key === 'X') {
             axesHelper.visible = !axesHelper.visible;
         }
     });
 
+    // Change from Car Cam to Ball Cam when f is pressed
     window.addEventListener('keydown', (event) => {
     if (event.key.toLowerCase() === 'f') {
         isBallCam = !isBallCam;
         console.log(`Camera Mode: ${isBallCam ? 'Ball Cam' : 'Car Cam'}`);
         }
     });
+
+    // Toggle Orbit Camera mode when o is pressed
+    window.addEventListener('keydown', (event) => {
+    if (event.key.toLowerCase() === 'o') {
+        isOrbitMode = !isOrbitMode;
+        console.log(`Camera Mode: ${isOrbitMode ? 'Orbit Cam' : 'Car Cam'}`);
+        }
+    });
+
 
     camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 10000);
 
@@ -116,9 +142,7 @@ function onWindowResize() {
 function cannonInit() {
     console.log("Initializing Cannon.js");
 
-    world = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.82, 0) })
-    // world.solver.iterations = 12;
-    // world.solver.tolerance = 0.001;
+    world = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.82 * 1.5, 0) })
 
 
 }
@@ -129,29 +153,69 @@ function cannonInit() {
 function animate() {
     requestAnimationFrame(animate);
     
-    controls.update();
+    // Only update OrbitControls in orbit mode
+    if (isOrbitMode) {
+        controls.update();
+    }
     const deltaTime = 1/60; // Fixed time step for physics
     
     world.fixedStep();
-    cannonDebugger.update() // Update the CannonDebugger meshes
+    // cannonDebugger.update() // Update the CannonDebugger meshes
     carInstance.update()
     ballInstance.update()
 
-    updateCamera(camera, carInstance.mesh.chassisMesh, ballInstance.mesh.mesh, isBallCam);
+    // Only update custom camera when not in orbit mode
+    if (!isOrbitMode) {
+        updateCarCamera(camera, carInstance.mesh.chassisMesh, ballInstance.mesh, isBallCam);
+    }
 
     renderer.render(scene, camera);
 }
+function resetCarToRandomKickoff() {
+    const spawn = KICKOFF_SPAWNS[Math.floor(Math.random() * KICKOFF_SPAWNS.length)];
+    const isSouthSide = Math.random() < 0.5;
 
+    // Determine the Z-position based on the side
+    let zCoordinate;
+    let targetYaw;
 
+    if (isSouthSide) {
+        // Spawn on the positive Z side
+        zCoordinate = spawn.z; 
+        // Rotate 90 degrees left to face the center
+        targetYaw = -Math.PI / 2; 
+    } else {
+        // Spawn on the negative Z side
+        zCoordinate = -spawn.z; 
+        // Rotate 90 degrees right to face the center
+        targetYaw = Math.PI / 2; 
+    }
+
+    // Apply the physics reset
+    const chassis = carInstance.physics.chassisBody;
+    
+    chassis.position.set(spawn.x, 2, zCoordinate);
+    
+    chassis.velocity.set(0, 0, 0);
+    chassis.angularVelocity.set(0, 0, 0);
+
+    // Set the rotation
+    // Set the y so the car is flat on the ground
+    chassis.quaternion.setFromEuler(0, targetYaw, 0);
+}
+
+/**
+ * @function onGoalScored, which is called by the arena when a goal is scored. 
+ * It resets the ball and car to kickoff positions, and logs the team that scored.    
+ * @param {*} team 
+ */
 function onGoalScored(team) {
     console.log(`Goal scored for ${team}!`);
-    // You can also update the UI here to reflect the score change
+    
     ballInstance.physics.position.set(0, 2, 0);
     ballInstance.physics.velocity.set(0, 0, 0);
     ballInstance.physics.angularVelocity.set(0, 0, 0);
 
-    // Reset Car (optional, but keeps things fair)
-    carInstance.physics.chassisBody.position.set(0, 2, -15);
-    carInstance.physics.chassisBody.velocity.set(0, 0, 0);
-    carInstance.physics.chassisBody.quaternion.set(0, 0, 0, 1);
+    // Reset Car to a random kickoff spawn
+    resetCarToRandomKickoff();
 }

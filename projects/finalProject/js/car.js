@@ -1,6 +1,6 @@
 /**
  * @luke-brous
- * @abstract This is the drivable car, modeled after the "Fennec" from Rocket League. It integrates Three.js for rendering and Cannon-es for physics simulation,
+ * @abstract This is the drivable car, modeled after the Fennec from Rocket League. It integrates Three.js for rendering and Cannon-es for physics simulation,
  * allowing for a physics-driven driving experience. Three.js, Cannon-es, and GLTFLoader are all used in this file.
  */
 
@@ -38,12 +38,13 @@ export default function car(scene, world) {
 
 /**
  * @function physics, which creates the Cannon-es RaycastVehicle for the car, including its chassis and wheels, and adds it to the physics world.
- * It also sets up event listeners for car controls (WASD, Space, B).
+ * It also sets up event listeners for car controls.
  * @param {CANNON.World} world - The Cannon-es physics world.
  * @returns {CANNON.RaycastVehicle} The configured Cannon-es RaycastVehicle.
  */
 function physics(world) {
     // use cannon-es raycastVehicle to build car
+    // First demo I ever looked at and drew inspiration from - https://github.com/pmndrs/cannon-es/blob/master/examples/raycast_vehicle.html
     const chassisShape = new CANNON.Box(new CANNON.Vec3(2,0.3,1))
     const chassisBody = new CANNON.Body({ mass: 150 })
 
@@ -56,8 +57,6 @@ function physics(world) {
     chassisBody.addShape(chassisShape)
     chassisBody.position.set(0, 4, -5)
     chassisBody.angularVelocity.set(0, 0, 0)
-    // chassisBody.linearDamping = 0.1; 
-    // chassisBody.angularDamping = 0.1;
 
     world.addBody(chassisBody)
 
@@ -95,36 +94,41 @@ function physics(world) {
     wheelParams.chassisConnectionPointLocal.set(1.4, -0.1, -1.0);
     vehicle.addWheel(wheelParams);
 
+
+    let lastRecoveryTime = 0; // for recovery flip cooldown
     window.addEventListener('keydown', (event) => {
-        // event.preventDefault()
         if (event.repeat) return;
 
         const maxSteerVal = 0.7
         const maxForce = 600
         const brakeForce = 100000
         switch (event.key) {
+          // drive forward
           case 'w':
           case 'ArrowUp':
             vehicle.applyEngineForce(-maxForce, 2)
             vehicle.applyEngineForce(-maxForce, 3)
             break
+          // reverse
           case 's':
           case 'ArrowDown':
             vehicle.applyEngineForce(maxForce, 2)
             vehicle.applyEngineForce(maxForce, 3)
             break
+          // steer left
           case 'a':
           case 'ArrowLeft':
             vehicle.setSteeringValue(maxSteerVal, 0)
             vehicle.setSteeringValue(maxSteerVal, 1)
             break
+          //steer right
           case 'd':
           case 'ArrowRight':
             vehicle.setSteeringValue(-maxSteerVal, 0)
             vehicle.setSteeringValue(-maxSteerVal, 1)
             break
           case ' ':
-            // WheelInfo contact can lag for one frame, so the raycast hit check is more reliable for jump gating.
+            // Only allow jumping if at least 2 wheels are on the ground to prevent mid-air jumps
             const groundedWheels = vehicle.wheelInfos.filter(w => w.raycastResult.hasHit).length;
 
             if (groundedWheels >= 2) {
@@ -133,16 +137,25 @@ function physics(world) {
               console.log(`Jump failed: only ${groundedWheels} wheels on ground`)
             }
             break;
+          // Recovery flip for when car is turtled
           case 't':
-            // Quick recovery: pop the car upward and flatten pitch/roll while keeping yaw.
-            const hopForce = 800; 
-            chassisBody.applyImpulse(new CANNON.Vec3(0, hopForce, 0), new CANNON.Vec3(0, 0, 0));
+            const now = Date.now();
 
-            const euler = new CANNON.Vec3();
-            chassisBody.quaternion.toEuler(euler);
+            // Only run if 3 seconds have passed
+            if (now - lastRecoveryTime > 3000) {
+                // Reset the car upright
+                const hopForce = 700; 
+                chassisBody.applyImpulse(new CANNON.Vec3(0, hopForce, 0), new CANNON.Vec3(0, 0, 0));
             
-            chassisBody.quaternion.setFromEuler(0, euler.y, 0);
-            chassisBody.angularVelocity.set(0, 0, 0);
+                const euler = new CANNON.Vec3();
+                chassisBody.quaternion.toEuler(euler);
+
+                chassisBody.quaternion.setFromEuler(0, euler.y, 0);
+                chassisBody.angularVelocity.set(0, 0, 0);
+            
+                // Update the timer
+                lastRecoveryTime = now;
+            }
             break;
           case 'b':
             vehicle.setBrake(brakeForce, 0)
@@ -310,7 +323,7 @@ async function loadFennec(group, scene) {
     meshesArray[2] = wheelFL; // front left
     meshesArray[3] = wheelFR; // front right
 
-    // fenne was really large, so scaling it back
+    // fennec was really large, so scaling it back
     fennecData.scene.scale.set(0.033,0.033,0.033)
 
     fennec.rotation.y = Math.PI;
